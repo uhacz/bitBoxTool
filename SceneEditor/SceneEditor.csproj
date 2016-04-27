@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -46,12 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
+    <Compile Include="Editors.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -75,6 +71,52 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\ATF\Framework\Atf.Atgi\Atf.Atgi.vs2010.csproj">
+      <Project>{d1fa9a85-9359-4725-a50f-8a67a77d700c}</Project>
+      <Name>Atf.Atgi.vs2010</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ATF\Framework\Atf.Collada\Atf.Collada.vs2010.csproj">
+      <Project>{6f80048b-e81f-4e06-9438-26c23487777c}</Project>
+      <Name>Atf.Collada.vs2010</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ATF\Framework\Atf.Core\Atf.Core.vs2010.csproj">
+      <Project>{9d1835b6-d1c2-44ba-bae1-05c6ec442d2f}</Project>
+      <Name>Atf.Core.vs2010</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ATF\Framework\Atf.Gui.OpenGL\Atf.Gui.OpenGL.vs2010.csproj">
+      <Project>{52d35323-1aa1-4205-a1b0-26c5e5e8d543}</Project>
+      <Name>Atf.Gui.OpenGL.vs2010</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ATF\Framework\Atf.Gui.WinForms\Atf.Gui.WinForms.vs2010.csproj">
+      <Project>{7c36a258-9102-420d-b80a-5eb5717644b6}</Project>
+      <Name>Atf.Gui.WinForms.vs2010</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ATF\Framework\Atf.Gui.Wpf\Atf.Gui.Wpf.vs2010.csproj">
+      <Project>{050fc659-553f-4911-a609-5ba1be4edbf8}</Project>
+      <Name>Atf.Gui.Wpf.vs2010</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ATF\Framework\Atf.Gui\Atf.Gui.vs2010.csproj">
+      <Project>{4765c2a7-f989-40db-bc12-fcd67025b93f}</Project>
+      <Name>Atf.Gui.vs2010</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ATF\Framework\Atf.IronPython\Atf.IronPython.vs2010.csproj">
+      <Project>{7f794c24-7a8d-4d21-b443-f03509669f89}</Project>
+      <Name>Atf.IronPython.vs2010</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ATF\Framework\Atf.Perforce\Atf.Perforce.vs2010.csproj">
+      <Project>{c7a306e0-32ae-4053-8882-e1a1e702c139}</Project>
+      <Name>Atf.Perforce.vs2010</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ATF\Framework\Atf.Subversion\Atf.Subversion.vs2010.csproj">
+      <Project>{ad8b5500-d8e2-4609-beca-c405ea22b1ae}</Project>
+      <Name>Atf.Subversion.vs2010</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ATF\Framework\Atf.SyntaxEditorControl\Atf.SyntaxEditorControl.vs2010.csproj">
+      <Project>{d1a78912-9ad2-4555-8560-b251a4d751dc}</Project>
+      <Name>Atf.SyntaxEditorControl.vs2010</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
