@@ -10,7 +10,7 @@ using Sce.Atf.Applications;
 using Sce.Atf.Controls;
 using Sce.Atf.Controls.PropertyEditing;
 
-namespace TreeListEditor
+namespace SceneEditor
 {
     /// <summary>
     /// Common data item editor derived from TreeListViewEditor used for all the tree view editors
@@ -69,26 +69,10 @@ namespace TreeListEditor
                 int x = 2, y = 2;
                 var buttonHeight = -1;
 
-                if ((flags & Buttons.AddFlat) == Buttons.AddFlat)
+                if ((flags & Buttons.AddItem) == Buttons.AddItem)
                 {
-                    var btn = CreateButton(AddFlatText, ref x, ref y, ref buttonHeight);
-                    btn.Tag = Buttons.AddFlat;
-                    btn.Click += BtnClick;
-                    m_uberControl.Controls.Add(btn);
-                }
-
-                if ((flags & Buttons.AddHierarchical) == Buttons.AddHierarchical)
-                {
-                    var btn = CreateButton(AddHierarchicalText, ref x, ref y, ref buttonHeight);
-                    btn.Tag = Buttons.AddHierarchical;
-                    btn.Click += BtnClick;
-                    m_uberControl.Controls.Add(btn);
-                }
-
-                if ((flags & Buttons.AddVirtual) == Buttons.AddVirtual)
-                {
-                    var btn = CreateButton(AddVirtualText, ref x, ref y, ref buttonHeight);
-                    btn.Tag = Buttons.AddVirtual;
+                    var btn = CreateButton(AddItemText, ref x, ref y, ref buttonHeight);
+                    btn.Tag = Buttons.AddItem;
                     btn.Click += BtnClick;
                     m_uberControl.Controls.Add(btn);
                 }
@@ -141,14 +125,6 @@ namespace TreeListEditor
                     m_uberControl.Controls.Add(btn);
                 }
 
-                if ((flags & Buttons.RecursiveCheckBoxes) == Buttons.RecursiveCheckBoxes)
-                {
-                    var btn = CreateButton(RecursiveCheckBoxesOffText, ref x, ref y, ref buttonHeight);
-                    btn.Tag = Buttons.RecursiveCheckBoxes;
-                    btn.Click += BtnClick;
-                    m_uberControl.Controls.Add(btn);
-                }
-
                 {
                     TreeListView.Control.Location = new Point(0, buttonHeight + 2);
                     TreeListView.Control.Anchor =
@@ -184,34 +160,25 @@ namespace TreeListEditor
             None = 0,
             /// <summary>
             /// Add flat data button</summary>
-            AddFlat = (1 << 0),
-            /// <summary>
-            /// Add hierarchical data button</summary>
-            AddHierarchical = (1 << 1),
-            /// <summary>
-            /// Add virtual data button</summary>
-            AddVirtual = (1 << 2),
+            AddItem = (1 << 0),
             /// <summary>
             /// Reload data button</summary>
-            Reload = (1 << 3),
+            Reload = (1 << 1),
             /// <summary>
             /// Expand all button</summary>
-            ExpandAll = (1 << 4),
+            ExpandAll = (1 << 2),
             /// <summary>
             /// Collapse all button</summary>
-            CollapseAll = (1 << 5),
+            CollapseAll = (1 << 3),
             /// <summary>
             /// Remove item button</summary>
-            RemoveItem = (1 << 6),
+            RemoveItem = (1 << 4),
             /// <summary>
             /// Modify selected button</summary>
-            ModifySelected = (1 << 7),
+            ModifySelected = (1 << 5),
             /// <summary>
             /// Select all button</summary>
-            SelectAll = (1 << 8),
-            /// <summary>
-            /// Recursive checkboxes</summary>
-            RecursiveCheckBoxes = (1 << 9),
+            SelectAll = (1 << 6),
         }
 
         /// <summary>
@@ -278,23 +245,13 @@ namespace TreeListEditor
 
             switch (flags)
             {
-                case Buttons.AddFlat:
+                case Buttons.AddItem:
                     DataContainer.GenerateFlat(
                         View,
                         (TreeListView.TheStyle != TreeListView.Style.TreeList) &&
                         (TreeListView.TheStyle != TreeListView.Style.CheckedTreeList)
                             ? null
                             : TreeListViewAdapter.LastHit);
-                    break;
-
-                case Buttons.AddHierarchical:
-                    DataContainer.GenerateHierarchical(
-                        View,
-                        TreeListViewAdapter.LastHit);
-                    break;
-
-                case Buttons.AddVirtual:
-                    DataContainer.GenerateVirtual(View);
                     break;
 
                 case Buttons.Reload:
@@ -325,13 +282,6 @@ namespace TreeListEditor
                         TreeListView.EndUpdate();
                     }
                     break;
-
-                case Buttons.RecursiveCheckBoxes:
-                    {
-                        TreeListView.RecursiveCheckBoxes = !TreeListView.RecursiveCheckBoxes;
-                        btn.Text = TreeListView.RecursiveCheckBoxes ? RecursiveCheckBoxesOnText : RecursiveCheckBoxesOffText;
-                    }
-                    break;
             }
         }
 
@@ -356,7 +306,7 @@ namespace TreeListEditor
         private readonly UserControl m_uberControl;
         private readonly IContextRegistry m_contextRegistry;
 
-        private const string AddFlatText = "Add Flat";
+        private const string AddItemText = "Add Item";
         private const string AddHierarchicalText = "Add Hierarchical";
         private const string AddVirtualText = "Add Virtual";
         private const string ReloadText = "Reload";
@@ -371,9 +321,7 @@ namespace TreeListEditor
         private const string SettingsCategory = "TreeListView";
         private const string SettingsDescription = "TreeListView Persisted Settings";
     }
-
- 
-
+    
     /// <summary>
     /// Tree list view editor component deriving from CommonEditor</summary>
     [Export(typeof(TreeList))]
@@ -393,7 +341,7 @@ namespace TreeListEditor
             : base(
                 "Tree List",
                 TreeListView.Style.TreeList,
-                Buttons.AddFlat | Buttons.AddHierarchical | Buttons.Reload | Buttons.ExpandAll |
+                Buttons.AddItem | Buttons.Reload | Buttons.ExpandAll |
                 Buttons.CollapseAll | Buttons.RemoveItem,
                 contextRegistry,
                 settingsService,

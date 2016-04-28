@@ -11,7 +11,7 @@ using Sce.Atf;
 using Sce.Atf.Applications;
 using Sce.Atf.Applications.WebServices;
 
-namespace TreeListEditor
+namespace SceneEditor
 {
     /// <summary>
     /// This is a tree list editor sample application.

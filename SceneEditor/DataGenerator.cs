@@ -14,7 +14,7 @@ using Sce.Atf.Applications;
 using Sce.Atf.Controls;
 using Sce.Atf.Controls.PropertyEditing;
 
-namespace TreeListEditor
+namespace SceneEditor
 {
     /// <summary>
     /// Enum for generated data types</summary>
@@ -318,31 +318,6 @@ namespace TreeListEditor
         }
 
         /// <summary>
-        /// Generates a list of hierarchical data</summary>
-        /// <param name="view">Tree list view</param>
-        /// <param name="lastHit">Last data item selected</param>
-        public static void GenerateHierarchical(ITreeListView view, object lastHit)
-        {
-            var container = view.As<DataContainer>();
-            if (container == null)
-                return;
-
-            container.GenerateHierarchical(lastHit.As<DataItem>());
-        }
-
-        /// <summary>
-        /// Generates data for a virtual list</summary>
-        /// <param name="view">Tree list view</param>
-        public static void GenerateVirtual(ITreeListView view)
-        {
-            var container = view.As<DataContainer>();
-            if (container == null)
-                return;
-
-            container.GenerateVirtual();
-        }
-
-        /// <summary>
         /// Updates generated data items</summary>
         /// <param name="view">Tree list view</param>
         public static void Reload(ITreeListView view)
@@ -575,59 +550,7 @@ namespace TreeListEditor
             Ending.Raise(this, EventArgs.Empty);
             Ended.Raise(this, EventArgs.Empty);
         }
-
-        private void GenerateHierarchical(DataItem parent)
-        {
-            DataItem root = null;
-            var tempParent = parent;
-
-            var items = s_random.Next(3, 10);
-            for (var i = 0; i < items; i++)
-            {
-                var data = CreateItem(tempParent);
-                data.ItemChanged += DataItemChanged;
-
-                if (root == null)
-                    root = data;
-
-                if (tempParent == null)
-                    m_data.Add(data);
-                else
-                    tempParent.Children.Add(data);
-
-                tempParent = data;
-            }
-
-            ItemInserted.Raise(this, new ItemInsertedEventArgs<object>(-1, root, parent));
-
-            if (parent != null)
-            {
-                ItemChanged.Raise(this, new ItemChangedEventArgs<object>(parent));
-            }
-        }
-
-        private void GenerateVirtual()
-        {
-            var items = s_random.Next(10000, 100001);
-
-            Outputs.WriteLine(
-                OutputMessageType.Info,
-                "Adding {0} items to the virtual list.",
-                items);
-
-            var arrayItems = new object[items];
-            for (var i = 0; i < items; i++)
-            {
-                var data = CreateItem(null);
-                data.ItemChanged += DataItemChanged;
-                arrayItems[i] = data;
-                m_data.Add(data);
-            }
-
-            // Can accept an array of objects or single object
-            ItemInserted.Raise(this, new ItemInsertedEventArgs<object>(-1, arrayItems));
-        }
-
+        
         private void Reload()
         {
             Beginning.Raise(this, EventArgs.Empty);
