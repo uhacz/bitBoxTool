@@ -61,11 +61,7 @@ namespace TreeListEditor
                                                                 //  Reset All, Copy Value, Paste Value, Copy All, Paste All
                         
                         /* Different styles of TreeListView */
-                        typeof(List),                           // list view editor component
-                        typeof(CheckedList),                    // checked list view editor component
-                        typeof(VirtualList),                    // virtual list view editor component
                         typeof(TreeList),                       // tree list view editor component
-                        typeof(CheckedTreeList),                // checked tree list view editor component
 
                         typeof(PythonService),                  // scripting service for automated tests
                         typeof(ScriptConsole),                  // provides a dockable command console for entering Python commands
