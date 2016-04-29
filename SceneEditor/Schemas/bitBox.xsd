@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema
+  elementFormDefault="qualified"
+  targetNamespace="bitBox"
+	xmlns="bitBox"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:simpleType name="floatListType">
+    <xs:list itemType="xs:float"></xs:list>
+  </xs:simpleType>
+  
+  <xs:simpleType name="vector3Type">
+    <xs:restriction base="floatListType">
+      <xs:length value="3"></xs:length>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="nodeType">
+    <xs:attribute name="name" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="graphType">    
+    <xs:sequence>
+      <xs:element name="node" type="nodeType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="MeshNode">    
+    <xs:complexContent>
+      <xs:extension base="nodeType">
+        <xs:attribute name="pos" type="vector3Type" default="0 0 0"/>
+        <xs:attribute name="rot" type="vector3Type" default="0 0 0"/>
+        <xs:attribute name="scale" type="vector3Type" default="1 1 1"/>
+        <xs:attribute name="material" type="xs:string" default="red"/>
+        <xs:attribute name="mesh" type="xs:string" default=":box"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="scene" type="graphType"/>
+  
+  <!--END Format Schema -->
+</xs:schema>
