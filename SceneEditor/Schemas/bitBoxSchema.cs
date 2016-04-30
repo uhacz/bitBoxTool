@@ -1,6 +1,6 @@
 // -------------------------------------------------------------------------------------------------------------------
 // Generated code, do not edit
-// Command Line:  DomGen "bitBox.xsd" "bitBoxSchema.cs" "bitBox" "bitBox"
+// Command Line:  DomGen "bitBox.xsd" "bitBoxSchema.cs" "bitBox" "SceneEditor" "-a"
 // -------------------------------------------------------------------------------------------------------------------
 
 using System;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 using Sce.Atf.Dom;
 
-namespace bitBox
+namespace SceneEditor
 {
     public static class bitBoxSchema
     {
@@ -72,4 +72,56 @@ namespace bitBox
 
         public static ChildInfo sceneRootElement;
     }
+
+    public partial class graphType : DomNodeAdapter
+    {
+        public string name
+        {
+            get { return GetAttribute<string>(bitBoxSchema.graphType.nameAttribute); }
+            set { SetAttribute(bitBoxSchema.graphType.nameAttribute, value); }
+        }
+        public IList<nodeType> node
+        {
+            get { return GetChildList<nodeType>(bitBoxSchema.graphType.nodeChild); }
+        }
+    }
+
+    public partial class nodeType : DomNodeAdapter
+    {
+        public string name
+        {
+            get { return GetAttribute<string>(bitBoxSchema.nodeType.nameAttribute); }
+            set { SetAttribute(bitBoxSchema.nodeType.nameAttribute, value); }
+        }
+    }
+
+    public partial class MeshNode : nodeType
+    {
+        public float[] pos
+        {
+            get { return GetAttribute<float[]>(bitBoxSchema.MeshNode.posAttribute); }
+            set { SetAttribute(bitBoxSchema.MeshNode.posAttribute, value); }
+        }
+        public float[] rot
+        {
+            get { return GetAttribute<float[]>(bitBoxSchema.MeshNode.rotAttribute); }
+            set { SetAttribute(bitBoxSchema.MeshNode.rotAttribute, value); }
+        }
+        public float[] scale
+        {
+            get { return GetAttribute<float[]>(bitBoxSchema.MeshNode.scaleAttribute); }
+            set { SetAttribute(bitBoxSchema.MeshNode.scaleAttribute, value); }
+        }
+        public string material
+        {
+            get { return GetAttribute<string>(bitBoxSchema.MeshNode.materialAttribute); }
+            set { SetAttribute(bitBoxSchema.MeshNode.materialAttribute, value); }
+        }
+        public string mesh
+        {
+            get { return GetAttribute<string>(bitBoxSchema.MeshNode.meshAttribute); }
+            set { SetAttribute(bitBoxSchema.MeshNode.meshAttribute, value); }
+        }
+    }
+
 }

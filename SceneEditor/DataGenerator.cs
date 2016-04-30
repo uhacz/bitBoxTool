@@ -18,11 +18,11 @@ namespace SceneEditor
 {
     /// <summary>
     /// Enum for generated data types</summary>
-    enum DataType
-    {
-        Integer = 0,
-        String = 1,
-    }
+    //enum DataType
+    //{
+    //    Integer = 0,
+    //    String = 1,
+    //}
 
     /// <summary>
     /// Class to generate data items to be displayed in tree editors</summary>
@@ -34,13 +34,13 @@ namespace SceneEditor
         /// <param name="name">Item name</param>
         /// <param name="type">Item data type</param>
         /// <param name="value">Item value</param>
-        public DataItem(DataItem parent, string name, DataType type, object value)
+        public DataItem(DataItem parent, string name )
         {
             m_parent = parent;
 
             Name = name;
-            Type = type;
-            Value = value;
+            //Type = type;
+            //Value = value;
         }
 
         /// <summary>
@@ -55,15 +55,15 @@ namespace SceneEditor
         [PropertyEditingAttribute]
         public string Name { get; set; }
 
-        /// <summary>
-        /// Gets item data type</summary>
-        [PropertyEditingAttribute]
-        public DataType Type { get; set; }
+        ///// <summary>
+        ///// Gets item data type</summary>
+        //[PropertyEditingAttribute]
+        //public DataType Type { get; set; }
 
-        /// <summary>
-        /// Gets item value</summary>
-        [PropertyEditingAttribute]
-        public object Value { get; set; }
+        ///// <summary>
+        ///// Gets item value</summary>
+        //[PropertyEditingAttribute]
+        //public object Value { get; set; }
 
         /// <summary>
         /// Gets whether item has children</summary>
@@ -403,12 +403,12 @@ namespace SceneEditor
                 return;
 
             info.Label = data.Name;
-            info.Properties =
-                new object[]
-                {
-                    data.Type.ToString(),
-                    data.Value
-                };
+            //info.Properties =
+            //    new object[]
+            //    {
+            //        data.Type.ToString(),
+            //        data.Value
+            //    };
 
             info.IsLeaf = !data.HasChildren;
             info.ImageIndex =
@@ -582,16 +582,16 @@ namespace SceneEditor
                 if (data == null)
                     continue;
 
-                switch (data.Type)
-                {
-                    case DataType.Integer:
-                        data.Value = (int)data.Value + s_random.Next(2, 6);
-                        break;
+                //switch (data.Type)
+                //{
+                //    case DataType.Integer:
+                //        data.Value = (int)data.Value + s_random.Next(2, 6);
+                //        break;
 
-                    case DataType.String:
-                        data.Value = string.Format("{0}{1}", data.Value, Alphabet[s_random.Next(0, Alphabet.Length)]);
-                        break;
-                }
+                //    case DataType.String:
+                //        data.Value = string.Format("{0}{1}", data.Value, Alphabet[s_random.Next(0, Alphabet.Length)]);
+                //        break;
+                //}
 
                 ItemChanged.Raise(this, new ItemChangedEventArgs<object>(data));
             }
@@ -619,33 +619,30 @@ namespace SceneEditor
 
         private static DataItem CreateItem(DataItem parent)
         {
-            var enumLength = Enum.GetNames(typeof(DataType)).Length;
+            //var enumLength = Enum.GetNames(typeof(DataType)).Length;
             var name = CreateString(s_random.Next(2, 11));
-            var type = (DataType)s_random.Next(0, enumLength);
+            //var type = (DataType)s_random.Next(0, enumLength);
 
-            object value;
-            switch (type)
-            {
-                case DataType.Integer:
-                    value = s_random.Next(0, 51);
-                    break;
+            //object value;
+            //switch (type)
+            //{
+            //    case DataType.Integer:
+            //        value = s_random.Next(0, 51);
+            //        break;
 
-                case DataType.String:
-                    value = CreateString(s_random.Next(5, 16));
-                    break;
+            //    case DataType.String:
+            //        value = CreateString(s_random.Next(5, 16));
+            //        break;
 
-                default:
-                    value = type.ToString();
-                    break;
-            }
+            //    default:
+            //        value = type.ToString();
+            //        break;
+            //}
 
             var data =
                 new DataItem(
                     parent,
-                    name,
-                    type,
-                    value);
-
+                    name);
             return data;
         }
 
@@ -679,8 +676,8 @@ namespace SceneEditor
             new[]
             {
                 "Name",
-                "Type",
-                "Value",
+                //"Type",
+                //"Value",
             };
 
         private const string Alphabet =
@@ -732,13 +729,13 @@ namespace SceneEditor
             if (rhs == null)
                 return -1;
 
-            CompareFunction[] sortFuncs;
-            switch (m_control.SortColumn)
-            {
-                case 1: sortFuncs = s_column1Sort; break;
-                case 2: sortFuncs = s_column2Sort; break;
-                default: sortFuncs = s_column0Sort; break;
-            }
+            CompareFunction[] sortFuncs = s_column0Sort;
+            //switch (m_control.SortColumn)
+            //{
+            //    case 1: sortFuncs = s_column1Sort; break;
+            //    case 2: sortFuncs = s_column2Sort; break;
+            //    default: sortFuncs = s_column0Sort; break;
+            //}
 
             var result = 0;
 
@@ -760,29 +757,29 @@ namespace SceneEditor
             return string.Compare(x.Name, y.Name);
         }
 
-        private static int CompareTypes(DataItem x, DataItem y)
-        {
-            if (x.Type == y.Type)
-                return 0;
+        //private static int CompareTypes(DataItem x, DataItem y)
+        //{
+        //    if (x.Type == y.Type)
+        //        return 0;
 
-            return (int)x.Type < (int)y.Type ? -1 : 1;
-        }
+        //    return (int)x.Type < (int)y.Type ? -1 : 1;
+        //}
 
-        private static int CompareValues(DataItem x, DataItem y)
-        {
-            return string.Compare(x.Value.ToString(), y.Value.ToString());
-        }
+        //private static int CompareValues(DataItem x, DataItem y)
+        //{
+        //    return string.Compare(x.Value.ToString(), y.Value.ToString());
+        //}
 
         private delegate int CompareFunction(DataItem x, DataItem y);
 
         private static readonly CompareFunction[] s_column0Sort =
-            new CompareFunction[] { CompareNames, CompareTypes, CompareValues };
+            new CompareFunction[] { CompareNames };
 
-        private static readonly CompareFunction[] s_column1Sort =
-            new CompareFunction[] { CompareTypes, CompareNames, CompareValues };
+        //private static readonly CompareFunction[] s_column1Sort =
+        //    new CompareFunction[] { CompareTypes, CompareNames, CompareValues };
 
-        private static readonly CompareFunction[] s_column2Sort =
-            new CompareFunction[] { CompareValues, CompareNames, CompareTypes };
+        //private static readonly CompareFunction[] s_column2Sort =
+        //    new CompareFunction[] { CompareValues, CompareNames, CompareTypes };
 
         private readonly TreeListView m_control;
     }

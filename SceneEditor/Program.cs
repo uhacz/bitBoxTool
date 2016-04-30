@@ -8,8 +8,10 @@ using System.Threading;
 using System.Windows.Forms;
 
 using Sce.Atf;
+using Sce.Atf.Adaptation;
 using Sce.Atf.Applications;
-using Sce.Atf.Applications.WebServices;
+//using Sce.Atf.Applications.WebServices;
+using Sce.Atf.Dom;
 
 namespace SceneEditor
 {
@@ -28,15 +30,29 @@ namespace SceneEditor
         [STAThread]
         static void Main()
         {
-            // important to call these before creating application host
+            //// important to call these before creating application host
+            //Application.EnableVisualStyles();
+            //Application.DoEvents(); // see http://www.codeproject.com/buglist/EnableVisualStylesBug.asp?df=100&forumid=25268&exp=0&select=984714
+
+            //// Set up localization support early on, so that user-readable strings will be localized
+            ////  during the initialization phase below. Use XML files that are embedded resources.
+            //Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.CurrentCulture;
+            //Localizer.SetStringLocalizer(new EmbeddedResourceStringLocalizer());
+
+            //// Enable metadata driven property editing for the DOM
+            //DomNodeType.BaseOfAllTypes.AddAdapterCreator(new AdapterCreator<CustomTypeDescriptorNodeAdapter>());
+
             Application.EnableVisualStyles();
-            Application.DoEvents(); // see http://www.codeproject.com/buglist/EnableVisualStylesBug.asp?df=100&forumid=25268&exp=0&select=984714
+            Application.SetCompatibleTextRenderingDefault(false);
 
             // Set up localization support early on, so that user-readable strings will be localized
             //  during the initialization phase below. Use XML files that are embedded resources.
             Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.CurrentCulture;
             Localizer.SetStringLocalizer(new EmbeddedResourceStringLocalizer());
-            
+
+            // Enable metadata driven property editing for the DOM
+            DomNodeType.BaseOfAllTypes.AddAdapterCreator(new AdapterCreator<CustomTypeDescriptorNodeAdapter>());
+
             using (
                 var catalog =
                     new TypeCatalog(
@@ -53,32 +69,33 @@ namespace SceneEditor
                         typeof(AtfUsageLogger),                 // logs computer info to an ATF server
                         typeof(CrashLogger),                    // logs unhandled exceptions to an ATF server
                         typeof(UnhandledExceptionService),      // catches unhandled exceptions, displays info, and gives user a chance to save
-                        typeof(UserFeedbackService),            // displaying a dialog box that allows the user to submit a bug report to SHIP
-                        typeof(VersionUpdateService),           // updates to latest version on SHIP
+                        //typeof(UserFeedbackService),            // displaying a dialog box that allows the user to submit a bug report to SHIP
+                        //typeof(VersionUpdateService),           // updates to latest version on SHIP
                         typeof(ContextRegistry),                // central context registry with change notification
                         typeof(PropertyEditor),                 // property grid for editing selected objects
+                        //typeof(GridPropertyEditor),             // grid control for editing selected objects
                         typeof(PropertyEditingCommands),        // commands for PropertyEditor and GridPropertyEditor, like Reset,
                                                                 //  Reset All, Copy Value, Paste Value, Copy All, Paste All
                         
-                        /* Different styles of TreeListView */
-                        typeof(TreeList),                       // tree list view editor component
-
                         typeof(PythonService),                  // scripting service for automated tests
                         typeof(ScriptConsole),                  // provides a dockable command console for entering Python commands
                         typeof(AtfScriptVariables),             // exposes common ATF services as script variables
-                        typeof(AutomationService)               // provides facilities to run an automated script using the .NET remoting service
+                        typeof(AutomationService)  ,             // provides facilities to run an automated script using the .NET remoting service
+
+                        typeof(SceneEditor.BitBoxSchemaLoader),
+                        typeof(TreeList)                     // tree list view editor component
                     ))
             {
                 using (var container = new CompositionContainer(catalog))
                 {
                     using (var mainForm = new MainForm())
                     {
-                        mainForm.Text = "TreeListView Sample".Localize();
+                        mainForm.Text = "SceneEditor".Localize();
                         mainForm.Icon = GdiUtil.CreateIcon(ResourceUtil.GetImage(Sce.Atf.Resources.AtfIconImage));
 
                         var batch = new CompositionBatch();
                         batch.AddPart(mainForm);
-                        batch.AddPart(new WebHelpCommands("https://github.com/SonyWWS/ATF/wiki/ATF-Tree-List-Editor-Sample".Localize()));
+                        //batch.AddPart(new WebHelpCommands("https://github.com/SonyWWS/ATF/wiki/ATF-Tree-List-Editor-Sample".Localize()));
                         container.Compose(batch);
 
                         container.InitializeAll();

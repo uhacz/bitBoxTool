@@ -1,24 +1,30 @@
 ﻿//Copyright © 2014 Sony Computer Entertainment America LLC. See License.txt.
 
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.Reflection;
 using System.Xml.Schema;
 
 using Sce.Atf;
 using Sce.Atf.Dom;
 
-namespace UsingDom
+namespace SceneEditor
 {
     /// <summary>
     /// Loads the game schema and defines data extensions on the DOM types</summary>
-    public class GameSchemaLoader : XmlSchemaTypeLoader
+    [Export(typeof(BitBoxSchemaLoader))]
+    [PartCreationPolicy(CreationPolicy.Shared)]
+    public class BitBoxSchemaLoader : XmlSchemaTypeLoader
     {
         /// <summary>
         /// Constructor</summary>
-        public GameSchemaLoader()
+        [ImportingConstructor]
+        public BitBoxSchemaLoader()
         {
             // set resolver to locate embedded .xsd file
-            SchemaResolver = new ResourceStreamResolver(Assembly.GetExecutingAssembly(), "UsingDom/Schemas");
-            Load("game.xsd");
+            SchemaResolver = new ResourceStreamResolver(Assembly.GetExecutingAssembly(), "SceneEditor/Schemas");
+            Load("bitBox.xsd");
         }
 
         /// <summary>
@@ -49,16 +55,15 @@ namespace UsingDom
             {
                 m_namespace = typeCollection.TargetNamespace;
                 m_typeCollection = typeCollection;
-                GameSchema.Initialize(typeCollection);
+                bitBoxSchema.Initialize(typeCollection);
                                 
                 // register extensions
-                GameSchema.gameType.Type.Define(new ExtensionInfo<Game>());
-                GameSchema.gameType.Type.Define(new ExtensionInfo<ReferenceValidator>());
-                GameSchema.gameType.Type.Define(new ExtensionInfo<UniqueIdValidator>());
-
-                GameSchema.gameObjectType.Type.Define(new ExtensionInfo<GameObject>());
-                GameSchema.dwarfType.Type.Define(new ExtensionInfo<Dwarf>());
-                GameSchema.ogreType.Type.Define(new ExtensionInfo<Ogre>());                
+                //bitBoxSchema.graphType.Type.Define(new ExtensionInfo<Game>());
+                //bitBoxSchema.graphType.Type.Define(new ExtensionInfo<ReferenceValidator>());
+                //bitBoxSchema.graphType.Type.Define(new ExtensionInfo<UniqueIdValidator>());
+                //
+                //bitBoxSchema.nodeType.Type.Define(new ExtensionInfo<GameObject>());
+                //bitBoxSchema.MeshNode.Type.Define(new ExtensionInfo<Dwarf>());
                 break;
             }
         }
