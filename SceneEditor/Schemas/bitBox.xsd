@@ -16,6 +16,9 @@
   </xs:simpleType>
 
   <xs:complexType name="nodeType">
+    <xs:sequence>
+      <xs:element name="node" type="nodeType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
     <xs:attribute name="name" type="xs:string" />
   </xs:complexType>
 
@@ -26,18 +29,27 @@
     <xs:attribute name="name" type="xs:string"/>
   </xs:complexType>
 
-  <xs:complexType name="MeshNode">    
+  <xs:complexType name="LocatorNode">
     <xs:complexContent>
       <xs:extension base="nodeType">
         <xs:attribute name="pos" type="vector3Type" default="0 0 0"/>
         <xs:attribute name="rot" type="vector3Type" default="0 0 0"/>
         <xs:attribute name="scale" type="vector3Type" default="1 1 1"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="MeshNode">    
+    <xs:complexContent>
+      <xs:extension base="LocatorNode">
         <xs:attribute name="material" type="xs:string" default="red"/>
         <xs:attribute name="mesh" type="xs:string" default=":box"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
+  
+  
   <xs:element name="scene" type="graphType"/>
   
   <!--END Format Schema -->

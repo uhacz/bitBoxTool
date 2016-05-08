@@ -34,6 +34,14 @@ namespace SceneEditor
 
             nodeType.Type = getNodeType("bitBox", "nodeType");
             nodeType.nameAttribute = nodeType.Type.GetAttributeInfo("name");
+            nodeType.nodeChild = nodeType.Type.GetChildInfo("node");
+
+            LocatorNode.Type = getNodeType("bitBox", "LocatorNode");
+            LocatorNode.nameAttribute = LocatorNode.Type.GetAttributeInfo("name");
+            LocatorNode.posAttribute = LocatorNode.Type.GetAttributeInfo("pos");
+            LocatorNode.rotAttribute = LocatorNode.Type.GetAttributeInfo("rot");
+            LocatorNode.scaleAttribute = LocatorNode.Type.GetAttributeInfo("scale");
+            LocatorNode.nodeChild = LocatorNode.Type.GetChildInfo("node");
 
             MeshNode.Type = getNodeType("bitBox", "MeshNode");
             MeshNode.nameAttribute = MeshNode.Type.GetAttributeInfo("name");
@@ -42,6 +50,7 @@ namespace SceneEditor
             MeshNode.scaleAttribute = MeshNode.Type.GetAttributeInfo("scale");
             MeshNode.materialAttribute = MeshNode.Type.GetAttributeInfo("material");
             MeshNode.meshAttribute = MeshNode.Type.GetAttributeInfo("mesh");
+            MeshNode.nodeChild = MeshNode.Type.GetChildInfo("node");
 
             sceneRootElement = getRootElement(NS, "scene");
         }
@@ -57,6 +66,17 @@ namespace SceneEditor
         {
             public static DomNodeType Type;
             public static AttributeInfo nameAttribute;
+            public static ChildInfo nodeChild;
+        }
+
+        public static class LocatorNode
+        {
+            public static DomNodeType Type;
+            public static AttributeInfo nameAttribute;
+            public static AttributeInfo posAttribute;
+            public static AttributeInfo rotAttribute;
+            public static AttributeInfo scaleAttribute;
+            public static ChildInfo nodeChild;
         }
 
         public static class MeshNode
@@ -68,6 +88,7 @@ namespace SceneEditor
             public static AttributeInfo scaleAttribute;
             public static AttributeInfo materialAttribute;
             public static AttributeInfo meshAttribute;
+            public static ChildInfo nodeChild;
         }
 
         public static ChildInfo sceneRootElement;
@@ -93,25 +114,33 @@ namespace SceneEditor
             get { return GetAttribute<string>(bitBoxSchema.nodeType.nameAttribute); }
             set { SetAttribute(bitBoxSchema.nodeType.nameAttribute, value); }
         }
+        public IList<nodeType> node
+        {
+            get { return GetChildList<nodeType>(bitBoxSchema.nodeType.nodeChild); }
+        }
     }
 
-    public partial class MeshNode : nodeType
+    public partial class LocatorNode : nodeType
     {
         public float[] pos
         {
-            get { return GetAttribute<float[]>(bitBoxSchema.MeshNode.posAttribute); }
-            set { SetAttribute(bitBoxSchema.MeshNode.posAttribute, value); }
+            get { return GetAttribute<float[]>(bitBoxSchema.LocatorNode.posAttribute); }
+            set { SetAttribute(bitBoxSchema.LocatorNode.posAttribute, value); }
         }
         public float[] rot
         {
-            get { return GetAttribute<float[]>(bitBoxSchema.MeshNode.rotAttribute); }
-            set { SetAttribute(bitBoxSchema.MeshNode.rotAttribute, value); }
+            get { return GetAttribute<float[]>(bitBoxSchema.LocatorNode.rotAttribute); }
+            set { SetAttribute(bitBoxSchema.LocatorNode.rotAttribute, value); }
         }
         public float[] scale
         {
-            get { return GetAttribute<float[]>(bitBoxSchema.MeshNode.scaleAttribute); }
-            set { SetAttribute(bitBoxSchema.MeshNode.scaleAttribute, value); }
+            get { return GetAttribute<float[]>(bitBoxSchema.LocatorNode.scaleAttribute); }
+            set { SetAttribute(bitBoxSchema.LocatorNode.scaleAttribute, value); }
         }
+    }
+
+    public partial class MeshNode : LocatorNode
+    {
         public string material
         {
             get { return GetAttribute<string>(bitBoxSchema.MeshNode.materialAttribute); }

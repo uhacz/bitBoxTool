@@ -56,7 +56,10 @@ namespace SceneEditor
                 m_namespace = typeCollection.TargetNamespace;
                 m_typeCollection = typeCollection;
                 bitBoxSchema.Initialize(typeCollection);
-                                
+
+                bitBoxSchema.graphType.Type.Define(new ExtensionInfo<SceneEditingContext>());
+                //bitBoxSchema.graphType.Type.Define(new ExtensionInfo<UniqueIdValidator>());
+
                 // register extensions
                 //bitBoxSchema.graphType.Type.Define(new ExtensionInfo<Game>());
                 //bitBoxSchema.graphType.Type.Define(new ExtensionInfo<ReferenceValidator>());
@@ -64,6 +67,26 @@ namespace SceneEditor
                 //
                 //bitBoxSchema.nodeType.Type.Define(new ExtensionInfo<GameObject>());
                 //bitBoxSchema.MeshNode.Type.Define(new ExtensionInfo<Dwarf>());
+
+                bitBoxSchema.MeshNode.Type.Define(new ExtensionInfo<MeshNode>());
+
+                foreach (DomNodeType type in GetNodeTypes(bitBoxSchema.nodeType.Type))
+                {
+                    string[] typeNameParts = type.Name.Split(':');
+                    string defaultNodeName = typeNameParts[typeNameParts.GetLength(0) - 1];
+                    defaultNodeName = defaultNodeName.Replace("Node", "");
+                    type.SetTag( new NodeTypePaletteItem( type, defaultNodeName, defaultNodeName.Localize(), null));
+                }
+
+                //string[] typeNameParts = bitBoxSchema.MeshNode.Type.Name.Split(':');
+                //string defaultNodeName = typeNameParts[typeNameParts.GetLength(0) - 1];
+                //defaultNodeName = defaultNodeName.Replace("Node", "");
+                //bitBoxSchema.MeshNode.Type.SetTag(
+                //    new NodeTypePaletteItem(
+                //        bitBoxSchema.MeshNode.Type,
+                //        defaultNodeName,
+                //        defaultNodeName.Localize(),
+                //        null ));
                 break;
             }
         }

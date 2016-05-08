@@ -65,10 +65,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataGenerator.cs" />
-    <Compile Include="Editors.cs" />
+    <Compile Include="PaletteClient.cs" />
+    <Compile Include="SceneEditingContext.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Editor.cs" />
     <Compile Include="Schemas\bitBoxSchema.cs" />
     <Compile Include="Schemas\bitBoxSchemaLoader.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
