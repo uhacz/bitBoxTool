@@ -1,26 +1,71 @@
 ﻿//Copyright © 2014 Sony Computer Entertainment America LLC. See License.txt.
 
-using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Reflection;
 using System.Xml.Schema;
+//using System.Collections.Generic;
 
 using Sce.Atf;
 using Sce.Atf.Dom;
+using Sce.Atf.Adaptation;
+using Sce.Atf.Controls.PropertyEditing;
+
+//using PropertyDescriptor = Sce.Atf.Dom.PropertyDescriptor;
 
 namespace SceneEditor
 {
+    internal class PropertyEditorFactory
+    {
+        //public PropertyEditorFactory()
+        //{
+        //    m_creatorDict.Add( "float3_t", typeName => new NumericTupleEditor() );
+
+        //}
+
+        public delegate IPropertyEditor editorCreator(string typeName);
+        
+        public static IPropertyEditor createEditorForAttribute( AttributeInfo info )
+        {
+            switch (info.Type.Type )
+            {
+                case AttributeTypes.Boolean:
+                    {
+                        return new BoolEditor();
+                    }
+                case AttributeTypes.Int32:
+                    {
+                        return new BoundedIntEditor();
+                    }
+                case AttributeTypes.Single:
+                    {
+                        return new BoundedFloatEditor();
+                    }
+                case AttributeTypes.SingleArray:
+                    {
+                        return new NumericTupleEditor();
+                    }
+                default:
+                    {
+                        return null;
+                    }
+
+            }
+        }
+
+        //private Dictionary<string, editorCreator> m_creatorDict;
+    }
     /// <summary>
     /// Loads the game schema and defines data extensions on the DOM types</summary>
-    [Export(typeof(BitBoxSchemaLoader))]
+    [Export(typeof(SchemaLoader))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class BitBoxSchemaLoader : XmlSchemaTypeLoader
+    public class SchemaLoader : XmlSchemaTypeLoader
     {
         /// <summary>
         /// Constructor</summary>
         [ImportingConstructor]
-        public BitBoxSchemaLoader()
+        public SchemaLoader()
         {
             // set resolver to locate embedded .xsd file
             SchemaResolver = new ResourceStreamResolver(Assembly.GetExecutingAssembly(), "SceneEditor/Schemas");
@@ -70,23 +115,28 @@ namespace SceneEditor
 
                 bitBoxSchema.MeshNode.Type.Define(new ExtensionInfo<MeshNode>());
 
+
+                var creator = new AdapterCreator<CustomTypeDescriptorNodeAdapter>();
+
                 foreach (DomNodeType type in GetNodeTypes(bitBoxSchema.nodeType.Type))
                 {
-                    string[] typeNameParts = type.Name.Split(':');
-                    string defaultNodeName = typeNameParts[typeNameParts.GetLength(0) - 1];
-                    defaultNodeName = defaultNodeName.Replace("Node", "");
-                    type.SetTag( new NodeTypePaletteItem( type, defaultNodeName, defaultNodeName.Localize(), null));
-                }
+                    type.AddAdapterCreator(creator);
 
-                //string[] typeNameParts = bitBoxSchema.MeshNode.Type.Name.Split(':');
-                //string defaultNodeName = typeNameParts[typeNameParts.GetLength(0) - 1];
-                //defaultNodeName = defaultNodeName.Replace("Node", "");
-                //bitBoxSchema.MeshNode.Type.SetTag(
-                //    new NodeTypePaletteItem(
-                //        bitBoxSchema.MeshNode.Type,
-                //        defaultNodeName,
-                //        defaultNodeName.Localize(),
-                //        null ));
+                    string defaultNodeName = type.Name.Split(':').Last().Replace("Node", "");
+                    type.SetTag( new NodeTypePaletteItem( type, defaultNodeName, defaultNodeName.Localize(), null));
+
+                    PropertyDescriptorCollection propDescs = new PropertyDescriptorCollection( null );
+                    foreach (AttributeInfo attr in type.Attributes)
+                    {
+                        IPropertyEditor editor = PropertyEditorFactory.createEditorForAttribute(attr);
+                        AttributePropertyDescriptor attributePropDesc = new AttributePropertyDescriptor( attr.Name.Localize(), attr, "Attributes".Localize(), null, false, editor );
+
+                        propDescs.Add(attributePropDesc);
+                    }
+
+                    type.SetTag(propDescs);
+
+                }
                 break;
             }
         }

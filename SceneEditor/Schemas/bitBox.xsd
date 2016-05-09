@@ -9,7 +9,7 @@
     <xs:list itemType="xs:float"></xs:list>
   </xs:simpleType>
   
-  <xs:simpleType name="vector3Type">
+  <xs:simpleType name="float3_t">
     <xs:restriction base="floatListType">
       <xs:length value="3"></xs:length>
     </xs:restriction>
@@ -32,9 +32,9 @@
   <xs:complexType name="LocatorNode">
     <xs:complexContent>
       <xs:extension base="nodeType">
-        <xs:attribute name="pos" type="vector3Type" default="0 0 0"/>
-        <xs:attribute name="rot" type="vector3Type" default="0 0 0"/>
-        <xs:attribute name="scale" type="vector3Type" default="1 1 1"/>
+        <xs:attribute name="pos" type="float3_t" default="0 0 0"/>
+        <xs:attribute name="rot" type="float3_t" default="0 0 0"/>
+        <xs:attribute name="scale" type="float3_t" default="1 1 1"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

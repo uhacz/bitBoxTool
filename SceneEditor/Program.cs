@@ -73,9 +73,9 @@ namespace SceneEditor
                         //typeof(VersionUpdateService),           // updates to latest version on SHIP
                         typeof(ContextRegistry),                // central context registry with change notification
                         typeof(PaletteService),                 // global palette, for drag/drop instancing
-                        //typeof(PropertyEditor),                 // property grid for editing selected objects
-                        //typeof(GridPropertyEditor),             // grid control for editing selected objects
-                        //typeof(PropertyEditingCommands),        // commands for PropertyEditor and GridPropertyEditor, like Reset,
+                        typeof(PropertyEditor),                 // property grid for editing selected objects
+                        typeof(GridPropertyEditor),             // grid control for editing selected objects
+                        typeof(PropertyEditingCommands),        // commands for PropertyEditor and GridPropertyEditor, like Reset,
                                                                 //  Reset All, Copy Value, Paste Value, Copy All, Paste All
                         
                         //typeof(PythonService),                  // scripting service for automated tests
@@ -83,7 +83,7 @@ namespace SceneEditor
                         //typeof(AtfScriptVariables),             // exposes common ATF services as script variables
                         //typeof(AutomationService)  ,             // provides facilities to run an automated script using the .NET remoting service
 
-                        typeof(SceneEditor.BitBoxSchemaLoader),
+                        typeof(SceneEditor.SchemaLoader),
                         typeof(SceneEditor.PaletteClient),                  // component which adds items to palette
                         typeof(SceneEditor.Editor)                     // tree list view editor component
                     ))

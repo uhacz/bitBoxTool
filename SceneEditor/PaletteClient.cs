@@ -18,7 +18,7 @@ namespace SceneEditor
         [ImportingConstructor]
         public PaletteClient(
             IPaletteService paletteService,
-            BitBoxSchemaLoader schemaLoader)
+            SchemaLoader schemaLoader)
         {
             m_paletteService = paletteService;
             m_schemaLoader = schemaLoader;
@@ -90,7 +90,7 @@ namespace SceneEditor
         #endregion
 
         private IPaletteService m_paletteService;
-        private BitBoxSchemaLoader m_schemaLoader;
+        private SchemaLoader m_schemaLoader;
         private UniqueNamer m_uniqueNamer;
     }
 }

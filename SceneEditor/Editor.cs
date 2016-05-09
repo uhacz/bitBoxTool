@@ -1,8 +1,9 @@
-﻿using System;
+﻿//using System;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using System.Text;
+//using System.Text;
 
 using Sce.Atf;
 using Sce.Atf.Dom;
@@ -19,7 +20,7 @@ namespace SceneEditor
     public class Editor : IControlHostClient, IInitializable
     {
         [ImportingConstructor]
-        public Editor(IControlHostService controlHostService)
+        public Editor(IControlHostService controlHostService, PropertyEditor propertyEditor )
         {
             m_controlHostService = controlHostService;
 
@@ -35,15 +36,16 @@ namespace SceneEditor
             m_treeControlAdapter = new TreeControlAdapter(m_treeControl);
 
             //m_domTreeView = new DomTreeView();
-            m_editContext = new SceneEditingContext();
+            //m_editContext = new SceneEditingContext();
 
-            m_propertyGrid = new Sce.Atf.Controls.PropertyEditing.PropertyGrid();
-            m_propertyGrid.Dock = DockStyle.Fill;
+            //m_propertyGrid = new Sce.Atf.Controls.PropertyEditing.PropertyGrid();
+            //m_propertyGrid.Dock = DockStyle.Fill;
+            m_propertyEditor = propertyEditor;
 
-            m_splitContainer = new SplitContainer();
-            m_splitContainer.Text = "Scene Explorer";
-            m_splitContainer.Panel1.Controls.Add(m_treeControl);
-            m_splitContainer.Panel2.Controls.Add(m_propertyGrid);
+            //m_splitContainer = new SplitContainer();
+            //m_splitContainer.Text = "Scene Explorer";
+            //m_splitContainer.Panel1.Controls.Add(m_treeControl);
+            //m_splitContainer.Panel2.Controls.Add(m_propertyGrid);
 
             m_sceneRoot = new DomNode(bitBoxSchema.graphType.Type, bitBoxSchema.sceneRootElement);
             m_sceneRoot.SetAttribute(bitBoxSchema.graphType.nameAttribute, "Scene");
@@ -93,13 +95,13 @@ namespace SceneEditor
         #region IInitializable Members
         public virtual void Initialize()
         {
-            m_controlHostService.RegisterControl(m_splitContainer,
-                "Scene Explorer".Localize(),
-                "".Localize(),
-                StandardControlGroup.Center,
-                this);
-
-
+            m_controlHostService.RegisterControl(
+                    m_treeControl,
+                    "Scene Explorer".Localize(),
+                    "".Localize(),
+                    StandardControlGroup.Center,
+                    this
+                );
         }
         #endregion
 
@@ -140,27 +142,17 @@ namespace SceneEditor
                     DomNode node = item as DomNode;
                     if (node != null)
                     {
-                        // Build property descriptors for node's attributes
-                        List<PropertyDescriptor> descriptors = new List<PropertyDescriptor>();
-                        foreach (AttributeInfo attributeInfo in node.Type.Attributes)
+                        PropertyDescriptorCollection propsDescs = node.Type.GetTag<PropertyDescriptorCollection>();
+                        if (propsDescs != null)
                         {
-                            descriptors.Add(
-                                new AttributePropertyDescriptor(
-                                    attributeInfo.Name,
-                                    attributeInfo,
-                                    "Attributes",
-                                    null,
-                                    false));
+                            m_propertyEditor.PropertyGrid.Bind( new PropertyCollectionWrapper(propsDescs, node) );
                         }
-
-                        // use property collection wrapper to expose the descriptors to the property grid
-                        m_propertyGrid.Bind(new PropertyCollectionWrapper(descriptors.ToArray(), node));
                     }
                     else // for NodeAdapters
                     {
                         // Treat NodeAdapters like normal .NET objects and expose directly to the property grid
                         DomNodeAdapter adapter = item as DomNodeAdapter;
-                        m_propertyGrid.Bind(adapter);
+                        m_propertyEditor.PropertyGrid.Bind(adapter);
                     }
                 }
             }
@@ -168,16 +160,6 @@ namespace SceneEditor
 
         private void treeControll_DragOver(object sender, DragEventArgs e)
         {
-            //if (m_root != null)
-            //{
-            //    EventContext context = m_event.Cast<EventContext>();
-            //    e.Effect = DragDropEffects.None;
-            //    if (context.CanInsert(e.Data))
-            //    {
-            //        e.Effect = DragDropEffects.Move;
-            //        ((Control)sender).Focus(); // Focus the list view; this will cause its context to become active
-            //    }
-            //}
             e.Effect = DragDropEffects.None;
             if (m_editContext.CanInsert(e.Data))
             {
@@ -197,29 +179,12 @@ namespace SceneEditor
                         m_editContext.Insert(e.Data);
                     }, "Drag and Drop".Localize());
             }
-
-            //if (m_event != null)
-            //{
-            //    IInstancingContext context = m_event.Cast<IInstancingContext>();
-            //    if (context.CanInsert(e.Data))
-            //    {
-            //        ITransactionContext transactionContext = context as ITransactionContext;
-            //        transactionContext.DoTransaction(delegate
-            //        {
-            //            context.Insert(e.Data);
-            //        }, "Drag and Drop".Localize());
-
-            //        if (m_statusService != null)
-            //            m_statusService.ShowStatus("Drag and Drop".Localize());
-            //    }
-            //}
         }
 
         private readonly IControlHostService m_controlHostService;
-        private readonly Sce.Atf.Controls.PropertyEditing.PropertyGrid m_propertyGrid;
+        private readonly PropertyEditor m_propertyEditor;
         private readonly TreeControl m_treeControl;
         private readonly TreeControlAdapter m_treeControlAdapter;
-        private readonly SplitContainer m_splitContainer;
         private readonly SceneEditingContext m_editContext;
         private readonly DomNode m_sceneRoot;
     }
