@@ -11,6 +11,7 @@ using Sce.Atf.Applications;
 using Sce.Atf.Controls;
 using Sce.Atf.Controls.PropertyEditing;
 using Sce.Atf.Adaptation;
+using System.Drawing;
 
 namespace SceneEditor
 {
@@ -20,7 +21,7 @@ namespace SceneEditor
     public class Editor : IControlHostClient, IInitializable
     {
         [ImportingConstructor]
-        public Editor(IControlHostService controlHostService, PropertyEditor propertyEditor )
+        public Editor(IControlHostService controlHostService, PropertyEditor propertyEditor, IContextRegistry contextRegistry )
         {
             m_controlHostService = controlHostService;
 
@@ -32,25 +33,20 @@ namespace SceneEditor
             m_treeControl.NodeSelectedChanged += treeControl_NodeSelectedChanged;
             m_treeControl.DragOver += treeControll_DragOver;
             m_treeControl.DragDrop += treeControll_DragDrop;
-
             m_treeControlAdapter = new TreeControlAdapter(m_treeControl);
 
-            //m_domTreeView = new DomTreeView();
-            //m_editContext = new SceneEditingContext();
-
-            //m_propertyGrid = new Sce.Atf.Controls.PropertyEditing.PropertyGrid();
-            //m_propertyGrid.Dock = DockStyle.Fill;
             m_propertyEditor = propertyEditor;
-
-            //m_splitContainer = new SplitContainer();
-            //m_splitContainer.Text = "Scene Explorer";
-            //m_splitContainer.Panel1.Controls.Add(m_treeControl);
-            //m_splitContainer.Panel2.Controls.Add(m_propertyGrid);
 
             m_sceneRoot = new DomNode(bitBoxSchema.graphType.Type, bitBoxSchema.sceneRootElement);
             m_sceneRoot.SetAttribute(bitBoxSchema.graphType.nameAttribute, "Scene");
+            m_sceneRoot.InitializeExtensions();
             m_editContext = m_sceneRoot.As<SceneEditingContext>();
             Root = m_sceneRoot;
+
+            m_contextRegistry = contextRegistry;
+
+            
+            
         }
 
         public DomNode Root
@@ -87,10 +83,10 @@ namespace SceneEditor
 
         /// <summary>
         /// Gets the TreeControlAdapter</summary>
-        public TreeControlAdapter TreeControlAdapter
-        {
-            get { return m_treeControlAdapter; }
-        }
+        //public TreeControlAdapter TreeControlAdapter
+        //{
+        //    get { return m_treeControlAdapter; }
+        //}
 
         #region IInitializable Members
         public virtual void Initialize()
@@ -142,49 +138,117 @@ namespace SceneEditor
                     DomNode node = item as DomNode;
                     if (node != null)
                     {
-                        PropertyDescriptorCollection propsDescs = node.Type.GetTag<PropertyDescriptorCollection>();
-                        if (propsDescs != null)
-                        {
-                            m_propertyEditor.PropertyGrid.Bind( new PropertyCollectionWrapper(propsDescs, node) );
-                        }
+                        NodeEditingContext nodeEditCtx = m_sceneRoot.Cast<NodeEditingContext>();
+                        nodeEditCtx.Set(node);
+                        m_contextRegistry.ActiveContext = nodeEditCtx;
                     }
-                    else // for NodeAdapters
+                    else
                     {
-                        // Treat NodeAdapters like normal .NET objects and expose directly to the property grid
-                        DomNodeAdapter adapter = item as DomNodeAdapter;
-                        m_propertyEditor.PropertyGrid.Bind(adapter);
+                        m_propertyEditor.PropertyGrid.Bind(null);
                     }
                 }
+            }
+            else
+            {
+                m_propertyEditor.PropertyGrid.Bind(null);
             }
         }
 
         private void treeControll_DragOver(object sender, DragEventArgs e)
         {
-            e.Effect = DragDropEffects.None;
-            if (m_editContext.CanInsert(e.Data))
+            bool canInsert = false;
+
+            if (TreeControl.DragBetween)
             {
-                e.Effect = DragDropEffects.Move;
-                ((Control)sender).Focus(); // Focus the list view; this will cause its context to become active
+                TreeControl.Node parent, before;
+                Point clientPoint = TreeControl.PointToClient(new Point(e.X, e.Y));
+                if (TreeControl.GetInsertionNodes(clientPoint, out parent, out before))
+                {
+                    canInsert = ApplicationUtil.CanInsertBetween(
+                        m_treeControlAdapter.TreeView,
+                        parent != null ? parent.Tag : null,
+                        before != null ? before.Tag : null,
+                        e.Data);
+                }
+            }
+            else
+            {
+                canInsert = ApplicationUtil.CanInsert(
+                    m_treeControlAdapter.TreeView,
+                    m_treeControlAdapter.LastHit,
+                    e.Data);
             }
 
+
+            e.Effect = DragDropEffects.None;
+            if ( canInsert )
+            {
+                e.Effect = DragDropEffects.Move;
+                ((Control)sender).Focus();
+            }
+
+            // A refresh is required to display the drag-between cue.  
+            if (TreeControl.ShowDragBetweenCue)
+                TreeControl.Invalidate();
+
+            //
+            //if (m_editContext.CanInsert(e.Data))
+            //{
+            //    ;
+            //    ((Control)sender).Focus(); // Focus the list view; this will cause its context to become active
+            //}
         }
 
         private void treeControll_DragDrop(object sender, DragEventArgs e)
         {
-            if (m_editContext.CanInsert(e.Data))
+            //if (m_editContext.CanInsert(e.Data))
+            //{
+            //    ITransactionContext transactionContext = m_editContext as ITransactionContext;
+            //    transactionContext.DoTransaction(delegate
+            //        {
+            //            m_editContext.Insert(e.Data);
+            //        }, "Drag and Drop".Localize());
+            //}
+            if (TreeControl.DragBetween)
             {
-                ITransactionContext transactionContext = m_editContext as ITransactionContext;
-                transactionContext.DoTransaction(delegate
-                    {
-                        m_editContext.Insert(e.Data);
-                    }, "Drag and Drop".Localize());
+                TreeControl.Node parent, before;
+                Point clientPoint = TreeControl.PointToClient(new Point(e.X, e.Y));
+                if (TreeControl.GetInsertionNodes(clientPoint, out parent, out before))
+                {
+                    ApplicationUtil.InsertBetween(
+                        m_treeControlAdapter.TreeView,
+                        parent != null ? parent.Tag : null,
+                        before != null ? before.Tag : null,
+                        e.Data,
+                        "Drag and Drop",
+                        null );
+                }
             }
+            else
+            {
+                ApplicationUtil.Insert(
+                    m_treeControlAdapter.TreeView,
+                    m_treeControlAdapter.LastHit,
+                    e.Data,
+                    "Drag and Drop",
+                    null );
+            }
+
+
+            if (!TreeControl.ShowDragBetweenCue)
+                return;
+
+
+            TreeControl.Invalidate();
         }
 
         private readonly IControlHostService m_controlHostService;
+        private readonly IContextRegistry m_contextRegistry;
+
         private readonly PropertyEditor m_propertyEditor;
         private readonly TreeControl m_treeControl;
         private readonly TreeControlAdapter m_treeControlAdapter;
+
         private readonly SceneEditingContext m_editContext;
         private readonly DomNode m_sceneRoot;
     }

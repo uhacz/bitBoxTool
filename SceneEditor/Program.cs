@@ -69,19 +69,10 @@ namespace SceneEditor
                         typeof(AtfUsageLogger),                 // logs computer info to an ATF server
                         typeof(CrashLogger),                    // logs unhandled exceptions to an ATF server
                         typeof(UnhandledExceptionService),      // catches unhandled exceptions, displays info, and gives user a chance to save
-                        //typeof(UserFeedbackService),            // displaying a dialog box that allows the user to submit a bug report to SHIP
-                        //typeof(VersionUpdateService),           // updates to latest version on SHIP
                         typeof(ContextRegistry),                // central context registry with change notification
                         typeof(PaletteService),                 // global palette, for drag/drop instancing
                         typeof(PropertyEditor),                 // property grid for editing selected objects
-                        typeof(GridPropertyEditor),             // grid control for editing selected objects
                         typeof(PropertyEditingCommands),        // commands for PropertyEditor and GridPropertyEditor, like Reset,
-                                                                //  Reset All, Copy Value, Paste Value, Copy All, Paste All
-                        
-                        //typeof(PythonService),                  // scripting service for automated tests
-                        //typeof(ScriptConsole),                  // provides a dockable command console for entering Python commands
-                        //typeof(AtfScriptVariables),             // exposes common ATF services as script variables
-                        //typeof(AutomationService)  ,             // provides facilities to run an automated script using the .NET remoting service
 
                         typeof(SceneEditor.SchemaLoader),
                         typeof(SceneEditor.PaletteClient),                  // component which adds items to palette

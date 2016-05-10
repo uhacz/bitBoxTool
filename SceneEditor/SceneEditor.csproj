@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NodeEditingContext.cs" />
     <Compile Include="PaletteClient.cs" />
     <Compile Include="SceneEditingContext.cs" />
     <Compile Include="Program.cs" />

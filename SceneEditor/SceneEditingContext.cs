@@ -10,7 +10,7 @@ using Sce.Atf.Adaptation;
 
 namespace SceneEditor
 {
-    public class SceneEditingContext : EditingContext, ITreeView, IItemView, IObservableContext, IInstancingContext, IEnumerableContext
+    public class SceneEditingContext : EditingContext, ITreeView, IItemView, IObservableContext, IInstancingContext, IHierarchicalInsertionContext, IEnumerableContext
     {
         public DomNode RootNode
         {
@@ -147,9 +147,13 @@ namespace SceneEditor
         /// Returns whether the context can insert the data object</summary>
         /// <param name="insertingObject">Data to insert; e.g., System.Windows.Forms.IDataObject</param>
         /// <returns>True iff the context can insert the data object</returns>
-        public bool CanInsert(object insertingObject)
+        /// 
+        private bool _IsDomNodeCheck(object obj)
         {
-            IDataObject dataObject = (IDataObject)insertingObject;
+            if (obj == null)
+                return false;
+
+            IDataObject dataObject = (IDataObject)obj;
             object[] items = dataObject.GetData(typeof(object[])) as object[];
             if (items == null)
                 return false;
@@ -160,10 +164,15 @@ namespace SceneEditor
 
             return true;
         }
+        public bool CanInsert(object insertingObject)
+        {
+            return _IsDomNodeCheck(insertingObject);
+        }
 
         /// <summary>
         /// Inserts the data object into the context</summary>
         /// <param name="insertingObject">Data to insert; e.g., System.Windows.Forms.IDataObject</param>
+        /// 
         public void Insert(object insertingObject)
         {
             IDataObject dataObject = (IDataObject)insertingObject;
@@ -199,6 +208,62 @@ namespace SceneEditor
             Selection.Clear();
         }
 
+        #endregion
+        #region IHierarchicalInsertionContext
+        /// <summary>
+        /// Returns true if context can insert the child object</summary>
+        /// <param name="parent">The proposed parent of the object to insert</param>
+        /// <param name="child">Child to insert</param>
+        /// <returns>True iff the context can insert the child</returns>
+
+
+        bool IHierarchicalInsertionContext.CanInsert(object parent, object child)
+        {
+            bool canInsertChild = _IsDomNodeCheck(child);
+            return canInsertChild;
+        }
+
+        /// <summary>
+        /// Inserts the child object into the context</summary>
+        /// <param name="parent">The parent of the object to insert</param>
+        /// <param name="child">Data to insert</param>
+        void IHierarchicalInsertionContext.Insert(object parent, object child)
+        {
+            DomNode parentNode;
+            if (parent != null)
+            {
+                parentNode = parent.As<DomNode>();
+            }
+            else
+            {
+                parentNode = m_root;
+            }
+
+            ChildInfo childInfo = null;
+            if (parentNode.Type == bitBoxSchema.graphType.Type)
+            {
+                childInfo = bitBoxSchema.graphType.nodeChild;
+            }
+            else if (bitBoxSchema.nodeType.Type.IsAssignableFrom(parentNode.Type))
+            {
+                childInfo = parentNode.Type.GetChildInfo("node");
+            }
+
+            if( childInfo != null )
+            {
+                IDataObject dataObject = (IDataObject)child;
+                object[] items = dataObject.GetData(typeof(object[])) as object[];
+                if (items == null)
+                    return;
+
+                DomNode[] itemCopies = DomNode.Copy(items.AsIEnumerable<DomNode>());
+
+                foreach (DomNode dnode in itemCopies)
+                {
+                    parentNode.GetChildList(childInfo).Add(dnode);
+                }
+            }
+        }
         #endregion
 
         public bool HasChildren(object item)

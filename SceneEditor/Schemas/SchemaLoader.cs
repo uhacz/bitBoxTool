@@ -103,6 +103,7 @@ namespace SceneEditor
                 bitBoxSchema.Initialize(typeCollection);
 
                 bitBoxSchema.graphType.Type.Define(new ExtensionInfo<SceneEditingContext>());
+                bitBoxSchema.graphType.Type.Define(new ExtensionInfo<NodeEditingContext>());
                 //bitBoxSchema.graphType.Type.Define(new ExtensionInfo<UniqueIdValidator>());
 
                 // register extensions
@@ -113,7 +114,7 @@ namespace SceneEditor
                 //bitBoxSchema.nodeType.Type.Define(new ExtensionInfo<GameObject>());
                 //bitBoxSchema.MeshNode.Type.Define(new ExtensionInfo<Dwarf>());
 
-                bitBoxSchema.MeshNode.Type.Define(new ExtensionInfo<MeshNode>());
+                //bitBoxSchema.MeshNode.Type.Define(new ExtensionInfo<MeshNode>());
 
 
                 var creator = new AdapterCreator<CustomTypeDescriptorNodeAdapter>();
