@@ -69,18 +69,26 @@ namespace SceneEditor
                         typeof(AtfUsageLogger),                 // logs computer info to an ATF server
                         typeof(CrashLogger),                    // logs unhandled exceptions to an ATF server
                         typeof(UnhandledExceptionService),      // catches unhandled exceptions, displays info, and gives user a chance to save
+                        
                         typeof(ContextRegistry),                // central context registry with change notification
+                        typeof(StandardEditCommands),           // standard Edit menu commands for copy/paste
+                        typeof(StandardEditHistoryCommands),    // standard Edit menu commands for undo/redo
+                        typeof(StandardSelectionCommands),      // standard Edit menu selection commands
+                        
                         typeof(PaletteService),                 // global palette, for drag/drop instancing
                         typeof(PropertyEditor),                 // property grid for editing selected objects
                         typeof(PropertyEditingCommands),        // commands for PropertyEditor and GridPropertyEditor, like Reset,
 
-                        typeof(SceneEditor.SchemaLoader),
-                        typeof(SceneEditor.PaletteClient),                  // component which adds items to palette
-                        typeof(SceneEditor.Editor)                     // tree list view editor component
+                        typeof(SchemaLoader),
+                        typeof(PaletteClient),                  // component which adds items to palette
+                        typeof(Editor)                     // tree list view editor component
                     ))
             {
                 using (var container = new CompositionContainer(catalog))
                 {
+                    //var toolStripContainer = new ToolStripContainer();
+                    //toolStripContainer.Dock = DockStyle.Fill;
+
                     using (var mainForm = new MainForm())
                     {
                         mainForm.Text = "SceneEditor".Localize();

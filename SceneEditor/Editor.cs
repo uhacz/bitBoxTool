@@ -141,6 +141,7 @@ namespace SceneEditor
                         NodeEditingContext nodeEditCtx = m_sceneRoot.Cast<NodeEditingContext>();
                         nodeEditCtx.Set(node);
                         m_contextRegistry.ActiveContext = nodeEditCtx;
+                        m_propertyEditor.PropertyGrid.Bind(node);
                     }
                     else
                     {
