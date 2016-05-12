@@ -65,7 +65,15 @@ namespace SceneEditor
                         typeof(WindowLayoutServiceCommands),    // window layout commands
                         typeof(OutputService),                  // rich text box for displaying error and warning messages. Implements IOutputWriter.
                         typeof(Outputs),                        // passes messages to all log writers
+
+                        typeof(DocumentRegistry),               // central document registry with change notification
+                        typeof(FileDialogService),              // standard Windows file dialogs
+                        typeof(AutoDocumentService),            // opens documents from last session, or creates a new document, on startup
+                        typeof(RecentDocumentCommands),         // standard recent document commands in File menu
+                        typeof(StandardFileCommands),           // standard File menu commands for New, Open, Save, SaveAs, Close
                         typeof(StandardFileExitCommand),        // standard File exit menu command
+                        typeof(TabbedControlSelector),          // enable ctrl-tab selection of documents and controls within the app
+
                         typeof(AtfUsageLogger),                 // logs computer info to an ATF server
                         typeof(CrashLogger),                    // logs unhandled exceptions to an ATF server
                         typeof(UnhandledExceptionService),      // catches unhandled exceptions, displays info, and gives user a chance to save
