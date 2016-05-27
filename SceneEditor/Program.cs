@@ -44,6 +44,7 @@ namespace SceneEditor
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            Application.DoEvents(); // see http://www.codeproject.com/buglist/EnableVisualStylesBug.asp?df=100&forumid=25268&exp=0&select=984714
 
             // Set up localization support early on, so that user-readable strings will be localized
             //  during the initialization phase below. Use XML files that are embedded resources.
@@ -59,12 +60,15 @@ namespace SceneEditor
 
                         /* Standard ATF stuff */
                         typeof(SettingsService),                // persistent settings and user preferences dialog
+                        typeof(StatusService),                  // status bar at bottom of main Form
                         typeof(CommandService),                 // handles commands in menus and toolbars
                         typeof(ControlHostService),             // docking control host
                         typeof(WindowLayoutService),            // multiple window layout support
                         typeof(WindowLayoutServiceCommands),    // window layout commands
                         typeof(OutputService),                  // rich text box for displaying error and warning messages. Implements IOutputWriter.
                         typeof(Outputs),                        // passes messages to all log writers
+                        typeof(CrashLogger),                    // logs unhandled exceptions to an ATF server
+                        typeof(UnhandledExceptionService),      // catches unhandled exceptions, displays info, and gives user a chance to save
 
                         typeof(DocumentRegistry),               // central document registry with change notification
                         typeof(FileDialogService),              // standard Windows file dialogs
@@ -94,30 +98,33 @@ namespace SceneEditor
             {
                 using (var container = new CompositionContainer(catalog))
                 {
-                    //var toolStripContainer = new ToolStripContainer();
-                    //toolStripContainer.Dock = DockStyle.Fill;
+                    var toolStripContainer = new ToolStripContainer();
+                    toolStripContainer.Dock = DockStyle.Fill;
 
-                    using (var mainForm = new MainForm())
+                    using (var mainForm = new MainForm(toolStripContainer))
                     {
                         mainForm.Text = "SceneEditor".Localize();
                         mainForm.Icon = GdiUtil.CreateIcon(ResourceUtil.GetImage(Sce.Atf.Resources.AtfIconImage));
 
                         var batch = new CompositionBatch();
                         batch.AddPart(mainForm);
-                        //batch.AddPart(new WebHelpCommands("https://github.com/SonyWWS/ATF/wiki/ATF-Tree-List-Editor-Sample".Localize()));
+                        batch.AddPart(new WebHelpCommands("https://github.com/SonyWWS/ATF/wiki/ATF-Tree-List-Editor-Sample".Localize()));
                         container.Compose(batch);
 
                         container.InitializeAll();
 
-                        // Set the switch level for the Atf TraceSource instance so everything is traced. 
-                        Outputs.TraceSource.Switch.Level = SourceLevels.All;
-                        // a very verbose data display that includes callstacks
-                        Outputs.TraceSource.Listeners["Default"].TraceOutputOptions =
-                            TraceOptions.Callstack | TraceOptions.DateTime |
-                            TraceOptions.ProcessId | TraceOptions.ThreadId |
-                            TraceOptions.Timestamp;
+                        //// Set the switch level for the Atf TraceSource instance so everything is traced. 
+                        //Outputs.TraceSource.Switch.Level = SourceLevels.All;
+                        //// a very verbose data display that includes callstacks
+                        //Outputs.TraceSource.Listeners["Default"].TraceOutputOptions =
+                        //    TraceOptions.Callstack | TraceOptions.DateTime |
+                        //    TraceOptions.ProcessId | TraceOptions.ThreadId |
+                        //    TraceOptions.Timestamp;
                         
                         Application.Run(mainForm);
+
+                        // Give components a chance to clean up.
+                        container.Dispose();
                     }
                 }
             }

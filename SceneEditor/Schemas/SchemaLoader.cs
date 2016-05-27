@@ -104,7 +104,7 @@ namespace SceneEditor
 
                 bitBoxSchema.graphType.Type.Define(new ExtensionInfo<SceneEditingContext>());
                 bitBoxSchema.graphType.Type.Define(new ExtensionInfo<NodeEditingContext>());
-                bitBoxSchema.graphType.Type.Define(new ExtensionInfo<Document>());
+                bitBoxSchema.graphType.Type.Define(new ExtensionInfo<SceneDocument>());
                 //bitBoxSchema.graphType.Type.Define(new ExtensionInfo<UniqueIdValidator>());
 
                 // register extensions
