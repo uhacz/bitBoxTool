@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.Composition;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
@@ -22,16 +23,22 @@ namespace SceneEditor
     {
         public SceneEditingContext()
         {
-            m_treeControl = new TreeControl();
-            m_treeControl.Dock = DockStyle.Fill;
-            m_treeControl.AllowDrop = true;
-            m_treeControl.SelectionMode = SelectionMode.MultiExtended;
-            m_treeControl.ImageList = ResourceUtil.GetImageList16();
-            m_treeControl.NodeSelectedChanged += treeControl_NodeSelectedChanged;
-            m_treeControl.DragOver += treeControll_DragOver;
-            m_treeControl.DragDrop += treeControll_DragDrop;
-            m_treeControl.ShowDragBetweenCue = true;
-            m_treeControlAdapter = new TreeControlAdapter(m_treeControl);
+            //m_treeControl.Dock = DockStyle.Fill;
+            //m_treeControl.AllowDrop = true;
+            //m_treeControl.SelectionMode = SelectionMode.MultiExtended;
+            //m_treeControl.ImageList = ResourceUtil.GetImageList16();
+            //m_treeControl.NodeSelectedChanged += treeControl_NodeSelectedChanged;
+            //m_treeControl.DragOver += treeControll_DragOver;
+            //m_treeControl.DragDrop += treeControll_DragDrop;
+            //m_treeControl.ShowDragBetweenCue = true;
+            //m_treeControlAdapter = new TreeControlAdapter(m_treeControl);
+        }
+
+        public void Initialize( ICommandService commandService )
+        {
+            m_treeControlEditor = new TreeControlEditor(commandService);
+            m_treeControlEditor.TreeControl.ShowDragBetweenCue = true;
+            m_treeControlEditor.TreeControl.AllowDrop = true;
         }
 
         static public DomNode _CreateSceneRoot(string name)
@@ -52,7 +59,8 @@ namespace SceneEditor
                     m_root.ChildInserted -= root_ChildInserted;
                     m_root.ChildRemoving -= root_ChildRemoving;
                     m_root.ChildRemoved -= root_ChildRemoved;
-                    m_treeControlAdapter.TreeView = null;
+                    m_treeControlEditor.TreeView = null;
+                    //m_treeControlAdapter.TreeView = null;
                 }
 
                 m_root = value.As<DomNode>();
@@ -64,7 +72,8 @@ namespace SceneEditor
                     m_root.ChildRemoving += root_ChildRemoving;
                     m_root.ChildRemoved += root_ChildRemoved;
 
-                    m_treeControlAdapter.TreeView = m_root.As<SceneEditingContext>();
+                    m_treeControlEditor.TreeView = this; // m_root.As<SceneEditingContext>();
+                    //m_treeControlAdapter.TreeView = m_root.As<SceneEditingContext>();
                 }
 
                 Reloaded.Raise(this, EventArgs.Empty);
@@ -433,75 +442,75 @@ namespace SceneEditor
             return -1;
         }
 
-        private void treeControll_DragOver(object sender, DragEventArgs e)
-        {
-            bool canInsert = false;
+        //private void treeControll_DragOver(object sender, DragEventArgs e)
+        //{
+        //    bool canInsert = false;
 
-            if (TreeControl.DragBetween)
-            {
-                TreeControl.Node parent, before;
-                Point clientPoint = TreeControl.PointToClient(new Point(e.X, e.Y));
-                if (TreeControl.GetInsertionNodes(clientPoint, out parent, out before))
-                {
-                    canInsert = ApplicationUtil.CanInsertBetween(
-                        m_treeControlAdapter.TreeView,
-                        parent != null ? parent.Tag : null,
-                        before != null ? before.Tag : null,
-                        e.Data);
-                }
-            }
-            else
-            {
-                canInsert = ApplicationUtil.CanInsert( m_treeControlAdapter.TreeView, m_treeControlAdapter.LastHit, e.Data);
-            }
-
-
-            e.Effect = DragDropEffects.None;
-            if (canInsert)
-            {
-                e.Effect = DragDropEffects.Move;
-                ((Control)sender).Focus();
-            }
-
-            // A refresh is required to display the drag-between cue.  
-            if (TreeControl.ShowDragBetweenCue)
-                TreeControl.Invalidate();
-        }
-
-        private void treeControll_DragDrop(object sender, DragEventArgs e)
-        {
-            if (TreeControl.DragBetween)
-            {
-                TreeControl.Node parent, before;
-                Point clientPoint = TreeControl.PointToClient(new Point(e.X, e.Y));
-                if (TreeControl.GetInsertionNodes(clientPoint, out parent, out before))
-                {
-                    ApplicationUtil.InsertBetween(
-                        m_treeControlAdapter.TreeView,
-                        parent != null ? parent.Tag : null,
-                        before != null ? before.Tag : null,
-                        e.Data,
-                        "Drag and Drop",
-                        null);
-                }
-            }
-            else
-            {
-                ApplicationUtil.Insert(
-                    m_treeControlAdapter.TreeView,
-                    m_treeControlAdapter.LastHit,
-                    e.Data,
-                    "Drag and Drop",
-                    null);
-            }
+        //    if (TreeControl.DragBetween)
+        //    {
+        //        TreeControl.Node parent, before;
+        //        Point clientPoint = TreeControl.PointToClient(new Point(e.X, e.Y));
+        //        if (TreeControl.GetInsertionNodes(clientPoint, out parent, out before))
+        //        {
+        //            canInsert = ApplicationUtil.CanInsertBetween(
+        //                m_treeControlAdapter.TreeView,
+        //                parent != null ? parent.Tag : null,
+        //                before != null ? before.Tag : null,
+        //                e.Data);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        canInsert = ApplicationUtil.CanInsert( m_treeControlAdapter.TreeView, m_treeControlAdapter.LastHit, e.Data);
+        //    }
 
 
-            if (!TreeControl.ShowDragBetweenCue)
-                return;
+        //    e.Effect = DragDropEffects.None;
+        //    if (canInsert)
+        //    {
+        //        e.Effect = DragDropEffects.Move;
+        //        ((Control)sender).Focus();
+        //    }
+
+        //    // A refresh is required to display the drag-between cue.  
+        //    if (TreeControl.ShowDragBetweenCue)
+        //        TreeControl.Invalidate();
+        //}
+
+        //private void treeControll_DragDrop(object sender, DragEventArgs e)
+        //{
+        //    if (TreeControl.DragBetween)
+        //    {
+        //        TreeControl.Node parent, before;
+        //        Point clientPoint = TreeControl.PointToClient(new Point(e.X, e.Y));
+        //        if (TreeControl.GetInsertionNodes(clientPoint, out parent, out before))
+        //        {
+        //            ApplicationUtil.InsertBetween(
+        //                m_treeControlAdapter.TreeView,
+        //                parent != null ? parent.Tag : null,
+        //                before != null ? before.Tag : null,
+        //                e.Data,
+        //                "Drag and Drop",
+        //                null);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        ApplicationUtil.Insert(
+        //            m_treeControlAdapter.TreeView,
+        //            m_treeControlAdapter.LastHit,
+        //            e.Data,
+        //            "Drag and Drop",
+        //            null);
+        //    }
 
 
-            TreeControl.Invalidate();
-        }
+        //    if (!TreeControl.ShowDragBetweenCue)
+        //        return;
+
+
+        //    TreeControl.Invalidate();
+        //}
 
         private void treeControl_NodeSelectedChanged(object sender, TreeControl.NodeEventArgs e)
         {
@@ -532,16 +541,15 @@ namespace SceneEditor
 
         private DomNode m_root;
         private int m_lastRemoveIndex;
-
         public IContextRegistry ContextRegistry { get;  set; }
         public PropertyEditor PropertyEditor { get; set; }
-        public TreeControl TreeControl
+        public TreeControlEditor TreeEditor
         {
-            get { return m_treeControl; }
+            get { return m_treeControlEditor; }
         }
 
-        private readonly TreeControl m_treeControl;
-        private readonly TreeControlAdapter m_treeControlAdapter;
+        private TreeControlEditor m_treeControlEditor;
+        //private readonly TreeControlAdapter m_treeControlAdapter;
         private ControlInfo m_controlInfo;
         //private bool m_showAdapters = true;
     }

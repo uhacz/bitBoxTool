@@ -26,6 +26,7 @@ namespace SceneEditor
             IContextRegistry contextRegistry,
             IDocumentRegistry documentRegistry,
             IDocumentService documentService,
+            ICommandService commandService,
             SchemaLoader schemaLoader )
         {
             m_propertyEditor = propertyEditor;
@@ -33,6 +34,7 @@ namespace SceneEditor
             m_contextRegistry = contextRegistry;
             m_documentService = documentService;
             m_documentRegistry = documentRegistry;
+            m_commandService = commandService;
             //m_documentRegistry.ActiveDocumentChanged += documentRegistry_ActiveDocumentChanged;
             m_schemaLoader = schemaLoader;  
         }
@@ -64,6 +66,7 @@ namespace SceneEditor
 
                 SceneEditingContext context = document.As<SceneEditingContext>();
                 m_contextRegistry.ActiveContext = context;
+                //context.TreeEditor.TreeControl.Focus();
             }
         }
 
@@ -90,7 +93,7 @@ namespace SceneEditor
                 SceneEditingContext context = document.As<SceneEditingContext>();
                 if (context != null)
                 {
-                    m_controlHostService.UnregisterControl(context.TreeControl);
+                    m_controlHostService.UnregisterControl(context.TreeEditor.TreeControl);
                 }
 
                 closed = m_documentService.Close(document);
@@ -184,10 +187,11 @@ namespace SceneEditor
 
                 context.PropertyEditor = m_propertyEditor;
                 context.ContextRegistry = m_contextRegistry;
-                context.TreeControl.Tag = document;
+                context.Initialize(m_commandService);
+                context.TreeEditor.TreeControl.Tag = document;
 
                 context.Root = node;
-                m_controlHostService.RegisterControl(context.TreeControl, context.ControlInfo, this);
+                m_controlHostService.RegisterControl(context.TreeEditor.TreeControl, context.ControlInfo, this);
             }
             return document;
         }
@@ -201,7 +205,7 @@ namespace SceneEditor
             //  a document, the document is also a context.
 
             SceneEditingContext context = document.As<SceneEditingContext>();
-            m_controlHostService.Show(context.TreeControl);
+            m_controlHostService.Show(context.TreeEditor.TreeControl);
         }
 
         /// <summary>
@@ -238,6 +242,7 @@ namespace SceneEditor
         private readonly IContextRegistry m_contextRegistry;
         private readonly IDocumentService m_documentService;
         private readonly IDocumentRegistry m_documentRegistry;
+        private readonly ICommandService m_commandService;
 
         private readonly PropertyEditor m_propertyEditor;
         private readonly SchemaLoader m_schemaLoader;
