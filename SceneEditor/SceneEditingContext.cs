@@ -13,10 +13,10 @@ using System.Drawing;
 
 namespace SceneEditor
 {
-    public class SceneEditingContext : 
-        EditingContext, ITreeView, IItemView, 
-        IObservableContext, 
-        IInstancingContext, 
+    public class SceneEditingContext :
+        EditingContext, ITreeView, IItemView,
+        IObservableContext,
+        IInstancingContext,
         IHierarchicalInsertionContext,
         IOrderedInsertionContext,
         IEnumerableContext
@@ -34,11 +34,15 @@ namespace SceneEditor
             //m_treeControlAdapter = new TreeControlAdapter(m_treeControl);
         }
 
+
+
         public void Initialize( ICommandService commandService )
         {
             m_treeControlEditor = new TreeControlEditor(commandService);
             m_treeControlEditor.TreeControl.ShowDragBetweenCue = true;
             m_treeControlEditor.TreeControl.AllowDrop = true;
+            //m_treeControlEditor.TreeControl.MouseDown += treeControl_MouseDown;
+            //m_treeControlEditor.TreeControl.MouseUp += treeControl_MouseUp;
         }
 
         static public DomNode _CreateSceneRoot(string name)
@@ -179,7 +183,7 @@ namespace SceneEditor
             return true;
         }
 
-        private DomNode[] _GetDomNodes(object obj)
+        private DomNode[] _GetDomNodes(object obj, bool copy )
         {
             IDataObject dataObject = (IDataObject)obj;
             object[] items = dataObject.GetData(typeof(object[])) as object[];
@@ -187,8 +191,21 @@ namespace SceneEditor
             {
                 return null;
             }
-            DomNode[] itemCopies = DomNode.Copy(items.AsIEnumerable<DomNode>());
-            return itemCopies;
+
+            if (copy)
+                return DomNode.Copy(items.AsIEnumerable<DomNode>());
+            else
+            {
+                List<DomNode> list = new List<DomNode>();
+                foreach (object item in items)
+                {
+                    DomNode u = item as DomNode;
+                    if (u != null)
+                        list.Add(u);
+                }
+                return list.ToArray();
+
+            }
         }
 
         #region IInstancingContext Members
@@ -196,7 +213,7 @@ namespace SceneEditor
         /// <summary>
         /// Returns whether the context can copy the selection</summary>
         /// <returns>True iff the context can copy</returns>
-        public bool CanCopy()
+        bool IInstancingContext.CanCopy()
         {
             return Selection.Count > 0;
         }
@@ -205,7 +222,7 @@ namespace SceneEditor
         /// Copies the selection. Returns a data object representing the copied items.</summary>
         /// <returns>Data object representing the copied items; e.g., a
         /// System.Windows.Forms.IDataObject object</returns>
-        public object Copy()
+        object IInstancingContext.Copy()
         {
             IEnumerable<DomNode> resources = Selection.AsIEnumerable<DomNode>();
             List<object> copies = new List<object>(DomNode.Copy(resources));
@@ -228,12 +245,7 @@ namespace SceneEditor
         /// 
         public void Insert(object insertingObject)
         {
-            IDataObject dataObject = (IDataObject)insertingObject;
-            object[] items = dataObject.GetData(typeof(object[])) as object[];
-            if (items == null)
-                return;
-
-            DomNode[] itemCopies = DomNode.Copy(items.AsIEnumerable<DomNode>());
+            DomNode[] itemCopies = _GetDomNodes(insertingObject, m_middleDown);
 
             foreach (DomNode dnode in itemCopies)
             {
@@ -304,12 +316,23 @@ namespace SceneEditor
 
             if( childInfo != null )
             {
-                IDataObject dataObject = (IDataObject)child;
-                object[] items = dataObject.GetData(typeof(object[])) as object[];
-                if (items == null)
-                    return;
+                DomNode[] itemCopies = _GetDomNodes(child, !m_middleDown);
+                //IDataObject dataObject = (IDataObject)child;
+                //object[] items = dataObject.GetData(typeof(object[])) as object[];
+                //if (items == null)
+                //    return;
 
-                DomNode[] itemCopies = DomNode.Copy(items.AsIEnumerable<DomNode>());
+                
+                //if (m_middleDown)
+                //{
+                //    itemCopies = items as DomNode[];
+                //    foreach (DomNode dnode in itemCopies)
+                //        dnode.RemoveFromParent();
+                //}
+                //else
+                //{
+                //    itemCopies = DomNode.Copy(items.AsIEnumerable<DomNode>());
+                //}
 
                 foreach (DomNode dnode in itemCopies)
                 {
@@ -360,10 +383,12 @@ namespace SceneEditor
         {
             DomNode parentDom = parent as DomNode;
             DomNode beforeDom = before as DomNode;
-            DomNode[] itemsDom = _GetDomNodes(item);
+            //DomNode[] itemsDom = _GetDomNodes(item);
+            DomNode[] itemsDom = _GetDomNodes(item, !m_middleDown);
 
             ChildInfo childInfo = parentDom.Type.GetChildInfo("node");
             IList<DomNode> childList = parentDom.GetChildList(childInfo);
+
             if (before == null)
             {
                 int index = 0;
@@ -537,7 +562,20 @@ namespace SceneEditor
                 PropertyEditor.PropertyGrid.Bind(null);
             }
         }
-
+        private void treeControl_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Middle)
+            {
+                m_middleDown = true;
+            }
+        }
+        private void treeControl_MouseUp(object sender, MouseEventArgs e)
+        {
+            if(e.Button == MouseButtons.Middle)
+            {
+                m_middleDown = false;
+            }
+        }
 
         private DomNode m_root;
         private int m_lastRemoveIndex;
@@ -552,5 +590,8 @@ namespace SceneEditor
         //private readonly TreeControlAdapter m_treeControlAdapter;
         private ControlInfo m_controlInfo;
         //private bool m_showAdapters = true;
+
+        private bool m_middleDown = false;
+
     }
 }
