@@ -22,7 +22,7 @@ namespace SceneEditor
         {
             m_paletteService = paletteService;
             m_schemaLoader = schemaLoader;
-            m_uniqueNamer = new UniqueNamer();
+            //m_uniqueNamer = new UniqueNamer();
         }
 
         #region IInitializable Members
@@ -79,8 +79,8 @@ namespace SceneEditor
 
                 if (bitBoxSchema.nodeType.Type.IsAssignableFrom( nodeType ) )
                 {
-                    string nodeName = m_uniqueNamer.Name(paletteItem.Name);
-                    node.SetAttribute(bitBoxSchema.nodeType.nameAttribute, nodeName);
+                    //string nodeName = m_uniqueNamer.Name();
+                    node.SetAttribute(bitBoxSchema.nodeType.nameAttribute, paletteItem.Name );
                 }
                 
             }
@@ -91,6 +91,6 @@ namespace SceneEditor
 
         private IPaletteService m_paletteService;
         private SchemaLoader m_schemaLoader;
-        private UniqueNamer m_uniqueNamer;
+        //private UniqueNamer m_uniqueNamer;
     }
 }

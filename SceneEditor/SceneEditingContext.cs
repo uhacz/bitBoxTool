@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.Composition;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
@@ -8,8 +7,6 @@ using Sce.Atf.Dom;
 using Sce.Atf.Applications;
 using Sce.Atf.Adaptation;
 using Sce.Atf.Controls;
-
-using System.Drawing;
 
 namespace SceneEditor
 {
@@ -23,24 +20,15 @@ namespace SceneEditor
     {
         public SceneEditingContext()
         {
-            //m_treeControl.Dock = DockStyle.Fill;
-            //m_treeControl.AllowDrop = true;
-            //m_treeControl.SelectionMode = SelectionMode.MultiExtended;
-            //m_treeControl.ImageList = ResourceUtil.GetImageList16();
-            //m_treeControl.NodeSelectedChanged += treeControl_NodeSelectedChanged;
-            //m_treeControl.DragOver += treeControll_DragOver;
-            //m_treeControl.DragDrop += treeControll_DragDrop;
-            //m_treeControl.ShowDragBetweenCue = true;
-            //m_treeControlAdapter = new TreeControlAdapter(m_treeControl);
+            m_uniqueNamer = new UniqueNamer();
         }
-
-
 
         public void Initialize( ICommandService commandService )
         {
-            m_treeControlEditor = new TreeControlEditor(commandService);
+            m_treeControlEditor = new FilteredTreeControlEditor(commandService);
             m_treeControlEditor.TreeControl.ShowDragBetweenCue = true;
             m_treeControlEditor.TreeControl.AllowDrop = true;
+                       
             //m_treeControlEditor.TreeControl.MouseDown += treeControl_MouseDown;
             //m_treeControlEditor.TreeControl.MouseUp += treeControl_MouseUp;
         }
@@ -64,6 +52,7 @@ namespace SceneEditor
                     m_root.ChildRemoving -= root_ChildRemoving;
                     m_root.ChildRemoved -= root_ChildRemoved;
                     m_treeControlEditor.TreeView = null;
+                    m_uniqueNamer.Clear();
                     //m_treeControlAdapter.TreeView = null;
                 }
 
@@ -76,8 +65,11 @@ namespace SceneEditor
                     m_root.ChildRemoving += root_ChildRemoving;
                     m_root.ChildRemoved += root_ChildRemoved;
 
-                    m_treeControlEditor.TreeView = this; // m_root.As<SceneEditingContext>();
-                    //m_treeControlAdapter.TreeView = m_root.As<SceneEditingContext>();
+                    m_treeControlEditor.TreeView = this; 
+                    foreach (DomNode node in m_root.Subtree)
+                    {
+                        _CheckNodeName(node);
+                    }
                 }
 
                 Reloaded.Raise(this, EventArgs.Empty);
@@ -183,7 +175,7 @@ namespace SceneEditor
             return true;
         }
 
-        private DomNode[] _GetDomNodes(object obj, bool copy )
+        private DomNode[] _GetDomNodes(object obj/*, bool copy*/ )
         {
             IDataObject dataObject = (IDataObject)obj;
             object[] items = dataObject.GetData(typeof(object[])) as object[];
@@ -192,19 +184,30 @@ namespace SceneEditor
                 return null;
             }
 
-            if (copy)
-                return DomNode.Copy(items.AsIEnumerable<DomNode>());
-            else
+            List<DomNode> list = new List<DomNode>();
+            foreach (object item in items)
             {
-                List<DomNode> list = new List<DomNode>();
-                foreach (object item in items)
-                {
-                    DomNode u = item as DomNode;
-                    if (u != null)
-                        list.Add(u);
-                }
-                return list.ToArray();
+                DomNode u = item as DomNode;
 
+                if (u.Parent == null)
+                {
+                    _CheckNodeName(u);
+                }
+
+                if (u != null)
+                    list.Add(u);
+            }
+
+            return list.ToArray();
+        }
+
+        public void _CheckNodeName(DomNode node)
+        {
+            if (bitBoxSchema.nodeType.Type.IsAssignableFrom(node.Type))
+            {
+                string name = (string)node.GetAttribute(bitBoxSchema.nodeType.nameAttribute);
+                string newName = m_uniqueNamer.Name(name);
+                node.SetAttribute(bitBoxSchema.nodeType.nameAttribute, newName);
             }
         }
 
@@ -226,6 +229,28 @@ namespace SceneEditor
         {
             IEnumerable<DomNode> resources = Selection.AsIEnumerable<DomNode>();
             List<object> copies = new List<object>(DomNode.Copy(resources));
+            //List<object> copies = new List<object>();
+            //foreach (DomNode node in resources)
+            //{
+            //    DomNode nodeCopy = DomNode.Copy(node);
+            //    _CheckNodeName(nodeCopy);
+            //    //if (bitBoxSchema.nodeType.Type.IsAssignableFrom(node.Type))
+            //    //{
+            //    //    DomNode parent = node.Parent;
+            //    //    parent.GetChildList(bitBoxSchema.nodeType.nodeChild).Add(nodeCopy);
+            //    //}
+
+            //    copies.Add(nodeCopy);
+            //}
+
+            //foreach (object cpy in copies)
+            //{
+            //    DomNode node = cpy as DomNode;
+            //    if( node != null )
+            //    {
+            //        _CheckNodeName(cpy as DomNode);
+            //    }
+            //}
             return new DataObject(copies.ToArray());
         }
 
@@ -245,7 +270,7 @@ namespace SceneEditor
         /// 
         public void Insert(object insertingObject)
         {
-            DomNode[] itemCopies = _GetDomNodes(insertingObject, m_middleDown);
+            DomNode[] itemCopies = _GetDomNodes(insertingObject/*, m_middleDown*/);
 
             foreach (DomNode dnode in itemCopies)
             {
@@ -316,24 +341,8 @@ namespace SceneEditor
 
             if( childInfo != null )
             {
-                DomNode[] itemCopies = _GetDomNodes(child, !m_middleDown);
-                //IDataObject dataObject = (IDataObject)child;
-                //object[] items = dataObject.GetData(typeof(object[])) as object[];
-                //if (items == null)
-                //    return;
-
+                DomNode[] itemCopies = _GetDomNodes(child);
                 
-                //if (m_middleDown)
-                //{
-                //    itemCopies = items as DomNode[];
-                //    foreach (DomNode dnode in itemCopies)
-                //        dnode.RemoveFromParent();
-                //}
-                //else
-                //{
-                //    itemCopies = DomNode.Copy(items.AsIEnumerable<DomNode>());
-                //}
-
                 foreach (DomNode dnode in itemCopies)
                 {
                     parentNode.GetChildList(childInfo).Add(dnode);
@@ -383,8 +392,7 @@ namespace SceneEditor
         {
             DomNode parentDom = parent as DomNode;
             DomNode beforeDom = before as DomNode;
-            //DomNode[] itemsDom = _GetDomNodes(item);
-            DomNode[] itemsDom = _GetDomNodes(item, !m_middleDown);
+            DomNode[] itemsDom = _GetDomNodes(item);
 
             ChildInfo childInfo = parentDom.Type.GetChildInfo("node");
             IList<DomNode> childList = parentDom.GetChildList(childInfo);
@@ -467,76 +475,6 @@ namespace SceneEditor
             return -1;
         }
 
-        //private void treeControll_DragOver(object sender, DragEventArgs e)
-        //{
-        //    bool canInsert = false;
-
-        //    if (TreeControl.DragBetween)
-        //    {
-        //        TreeControl.Node parent, before;
-        //        Point clientPoint = TreeControl.PointToClient(new Point(e.X, e.Y));
-        //        if (TreeControl.GetInsertionNodes(clientPoint, out parent, out before))
-        //        {
-        //            canInsert = ApplicationUtil.CanInsertBetween(
-        //                m_treeControlAdapter.TreeView,
-        //                parent != null ? parent.Tag : null,
-        //                before != null ? before.Tag : null,
-        //                e.Data);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        canInsert = ApplicationUtil.CanInsert( m_treeControlAdapter.TreeView, m_treeControlAdapter.LastHit, e.Data);
-        //    }
-
-
-        //    e.Effect = DragDropEffects.None;
-        //    if (canInsert)
-        //    {
-        //        e.Effect = DragDropEffects.Move;
-        //        ((Control)sender).Focus();
-        //    }
-
-        //    // A refresh is required to display the drag-between cue.  
-        //    if (TreeControl.ShowDragBetweenCue)
-        //        TreeControl.Invalidate();
-        //}
-
-        //private void treeControll_DragDrop(object sender, DragEventArgs e)
-        //{
-        //    if (TreeControl.DragBetween)
-        //    {
-        //        TreeControl.Node parent, before;
-        //        Point clientPoint = TreeControl.PointToClient(new Point(e.X, e.Y));
-        //        if (TreeControl.GetInsertionNodes(clientPoint, out parent, out before))
-        //        {
-        //            ApplicationUtil.InsertBetween(
-        //                m_treeControlAdapter.TreeView,
-        //                parent != null ? parent.Tag : null,
-        //                before != null ? before.Tag : null,
-        //                e.Data,
-        //                "Drag and Drop",
-        //                null);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        ApplicationUtil.Insert(
-        //            m_treeControlAdapter.TreeView,
-        //            m_treeControlAdapter.LastHit,
-        //            e.Data,
-        //            "Drag and Drop",
-        //            null);
-        //    }
-
-
-        //    if (!TreeControl.ShowDragBetweenCue)
-        //        return;
-
-
-        //    TreeControl.Invalidate();
-        //}
-
         private void treeControl_NodeSelectedChanged(object sender, TreeControl.NodeEventArgs e)
         {
             if (e.Node.Selected)
@@ -562,20 +500,6 @@ namespace SceneEditor
                 PropertyEditor.PropertyGrid.Bind(null);
             }
         }
-        private void treeControl_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Middle)
-            {
-                m_middleDown = true;
-            }
-        }
-        private void treeControl_MouseUp(object sender, MouseEventArgs e)
-        {
-            if(e.Button == MouseButtons.Middle)
-            {
-                m_middleDown = false;
-            }
-        }
 
         private DomNode m_root;
         private int m_lastRemoveIndex;
@@ -586,12 +510,8 @@ namespace SceneEditor
             get { return m_treeControlEditor; }
         }
 
-        private TreeControlEditor m_treeControlEditor;
-        //private readonly TreeControlAdapter m_treeControlAdapter;
+        private FilteredTreeControlEditor m_treeControlEditor;
         private ControlInfo m_controlInfo;
-        //private bool m_showAdapters = true;
-
-        private bool m_middleDown = false;
-
+        private UniqueNamer m_uniqueNamer;
     }
 }
