@@ -2,7 +2,7 @@
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Windows.Forms;
-//using System.Text;
+using System.Text;
 
 using Sce.Atf;
 using Sce.Atf.Dom;
@@ -17,17 +17,17 @@ namespace SceneEditor
     [Export(typeof(Editor))]
     [Export(typeof(IInitializable))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class Editor : IDocumentClient, IControlHostClient, IInitializable
+    public class Editor : IDocumentClient, IControlHostClient, ICommandClient, IInitializable
     {
         [ImportingConstructor]
         public Editor(
-            IControlHostService controlHostService, 
-            PropertyEditor propertyEditor, 
+            IControlHostService controlHostService,
+            PropertyEditor propertyEditor,
             IContextRegistry contextRegistry,
             IDocumentRegistry documentRegistry,
             IDocumentService documentService,
             ICommandService commandService,
-            SchemaLoader schemaLoader )
+            SchemaLoader schemaLoader)
         {
             m_propertyEditor = propertyEditor;
             m_controlHostService = controlHostService;
@@ -36,7 +36,18 @@ namespace SceneEditor
             m_documentRegistry = documentRegistry;
             m_commandService = commandService;
             //m_documentRegistry.ActiveDocumentChanged += documentRegistry_ActiveDocumentChanged;
-            m_schemaLoader = schemaLoader;  
+            m_schemaLoader = schemaLoader;
+        }
+
+        public enum EMenu
+        {
+            eMenu_Tag,
+            eGroup_ExportTag,
+        }
+        public enum ECommand
+        {
+            eExportScene,
+            eExportLevel,
         }
 
         #region IInitializable Members
@@ -49,7 +60,90 @@ namespace SceneEditor
             //        StandardControlGroup.Center,
             //        this
             //    );
+
+            MenuInfo menuInfo = new MenuInfo(EMenu.eMenu_Tag, "bx", "");
+            m_commandService.RegisterMenu(menuInfo);
+
+            m_commandService.RegisterCommand(ECommand.eExportScene, EMenu.eMenu_Tag, EMenu.eGroup_ExportTag, "Export Scene", "", this);
+            m_commandService.RegisterCommand(ECommand.eExportLevel, EMenu.eMenu_Tag, EMenu.eGroup_ExportTag, "Export Level", "", this);
         }
+        #endregion
+
+        #region ICommandClient
+        /// <summary>
+        /// Checks whether the client can do the command, if it handles it</summary>
+        /// <param name="commandTag">Command to be done</param>
+        /// <returns>True iff client can do the command</returns>
+        bool ICommandClient.CanDoCommand(object commandTag)
+        {
+            if (ECommand.eExportScene.Equals(commandTag) )
+            {
+                SceneDocument sceneDoc = m_documentRegistry.ActiveDocument as SceneDocument;
+                return sceneDoc != null;
+            }
+            else if (ECommand.eExportLevel.Equals(commandTag))
+            {
+                bool result = false;
+                foreach (IDocument doc in m_documentRegistry.Documents)
+                {
+                    SceneDocument sceneDoc = doc as SceneDocument;
+                    if (sceneDoc != null)
+                    {
+                        result = true;
+                        break;
+                    }
+                }
+
+                return result;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Does the command</summary>
+        /// <param name="commandTag">Command to be done</param>
+        void ICommandClient.DoCommand(object commandTag)
+        {
+            System.Globalization.NumberFormatInfo.CurrentInfo.CurrencyDecimalDigits = 4;
+            if (ECommand.eExportScene.Equals(commandTag))
+            {
+
+                SceneDocument sceneDoc = m_documentRegistry.ActiveDocument as SceneDocument;
+                DomNode root = sceneDoc.DomNode;
+
+                StringBuilder txt = new StringBuilder();
+                foreach (DomNode node in root.Subtree)
+                {
+                    DomNodeType type = node.Type;
+                    if (!bitBoxSchema.nodeType.Type.IsAssignableFrom(type))
+                        continue;
+
+                    AttributeInfo attr_nodeName = type.GetAttributeInfo("name");
+                    if (attr_nodeName == null)
+                        continue;
+
+                    string nodeName = (string)node.GetAttribute(attr_nodeName);
+                    txt.AppendLine("@" + type.Name + " " + nodeName);
+
+                    foreach (AttributeInfo ainfo in type.Attributes)
+                    {
+                        if (ainfo.Name == "name")
+                            continue;
+                        
+                        object value = node.GetAttribute(ainfo);
+                        if( !value.Equals( ainfo.DefaultValue) )
+                            txt.AppendLine("$" + ainfo.Name + " " + ainfo.Type.Convert(value));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates command state for given command</summary>
+        /// <param name="commandTag">Command</param>
+        /// <param name="commandState">Command info to update</param>
+        void ICommandClient.UpdateCommand(object commandTag, CommandState commandState)
+        { }
         #endregion
 
         #region IControlHostClient Members
