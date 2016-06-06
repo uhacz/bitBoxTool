@@ -3,6 +3,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Windows.Forms;
 using System.Text;
+using System.Linq;
 
 using Sce.Atf;
 using Sce.Atf.Dom;
@@ -104,10 +105,8 @@ namespace SceneEditor
         /// <param name="commandTag">Command to be done</param>
         void ICommandClient.DoCommand(object commandTag)
         {
-            System.Globalization.NumberFormatInfo.CurrentInfo.CurrencyDecimalDigits = 4;
             if (ECommand.eExportScene.Equals(commandTag))
             {
-
                 SceneDocument sceneDoc = m_documentRegistry.ActiveDocument as SceneDocument;
                 DomNode root = sceneDoc.DomNode;
 
@@ -122,8 +121,11 @@ namespace SceneEditor
                     if (attr_nodeName == null)
                         continue;
 
+                    string typeName = type.Name.Split(':').Last().Replace("Node", "");
                     string nodeName = (string)node.GetAttribute(attr_nodeName);
-                    txt.AppendLine("@" + type.Name + " " + nodeName);
+
+                    txt.AppendLine();
+                    txt.AppendLine("@" + typeName + " " + nodeName);
 
                     foreach (AttributeInfo ainfo in type.Attributes)
                     {
@@ -135,6 +137,11 @@ namespace SceneEditor
                             txt.AppendLine("$" + ainfo.Name + " " + ainfo.Type.Convert(value));
                     }
                 }
+
+                string dstURI = sceneDoc.Uri.AbsolutePath;
+                dstURI = dstURI.Replace(".src", "");
+                dstURI = dstURI.Replace(".source_scene", ".scene");
+                File.WriteAllText(dstURI, txt.ToString());
             }
         }
 
