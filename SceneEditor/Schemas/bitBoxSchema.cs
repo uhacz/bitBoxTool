@@ -48,8 +48,8 @@ namespace SceneEditor
             MeshNode.posAttribute = MeshNode.Type.GetAttributeInfo("pos");
             MeshNode.rotAttribute = MeshNode.Type.GetAttributeInfo("rot");
             MeshNode.scaleAttribute = MeshNode.Type.GetAttributeInfo("scale");
-            MeshNode.materialAttribute = MeshNode.Type.GetAttributeInfo("material");
             MeshNode.meshAttribute = MeshNode.Type.GetAttributeInfo("mesh");
+            MeshNode.materialAttribute = MeshNode.Type.GetAttributeInfo("material");
             MeshNode.nodeChild = MeshNode.Type.GetChildInfo("node");
 
             sceneRootElement = getRootElement(NS, "scene");
@@ -86,8 +86,8 @@ namespace SceneEditor
             public static AttributeInfo posAttribute;
             public static AttributeInfo rotAttribute;
             public static AttributeInfo scaleAttribute;
-            public static AttributeInfo materialAttribute;
             public static AttributeInfo meshAttribute;
+            public static AttributeInfo materialAttribute;
             public static ChildInfo nodeChild;
         }
 
@@ -141,15 +141,15 @@ namespace SceneEditor
 
     public partial class MeshNode : LocatorNode
     {
-        public string material
-        {
-            get { return GetAttribute<string>(bitBoxSchema.MeshNode.materialAttribute); }
-            set { SetAttribute(bitBoxSchema.MeshNode.materialAttribute, value); }
-        }
         public string mesh
         {
             get { return GetAttribute<string>(bitBoxSchema.MeshNode.meshAttribute); }
             set { SetAttribute(bitBoxSchema.MeshNode.meshAttribute, value); }
+        }
+        public string material
+        {
+            get { return GetAttribute<string>(bitBoxSchema.MeshNode.materialAttribute); }
+            set { SetAttribute(bitBoxSchema.MeshNode.materialAttribute, value); }
         }
     }
 

@@ -1,2 +1,2 @@
-..\..\..\ATF\DevTools\DomGen\bin\DomGen.exe bitBox.xsd bitBoxSchema.cs bitBox SceneEditor -a
+..\..\..\ATF\DevTools\DomGen\bin\DomGen.exe bitBox.xsd bitBoxSchema.cs "bitBox" SceneEditor -a
 

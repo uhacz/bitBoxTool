@@ -70,6 +70,50 @@ namespace SceneEditor
         }
         #endregion
 
+        string _ExportScene(DomNode root)
+        {
+            StringBuilder txt = new StringBuilder();
+
+            foreach (DomNode node in root.Subtree)
+            {
+                DomNodeType type = node.Type;
+                if (!bitBoxSchema.nodeType.Type.IsAssignableFrom(type))
+                    continue;
+
+                AttributeInfo attr_nodeName = type.GetAttributeInfo("name");
+                if (attr_nodeName == null)
+                    continue;
+
+                string typeName = type.Name.Split(':').Last().Replace("Node", "");
+                string nodeName = (string)node.GetAttribute(attr_nodeName);
+
+                txt.AppendLine();
+                txt.AppendLine("@" + typeName + " " + nodeName);
+
+                foreach (AttributeInfo ainfo in type.Attributes)
+                {
+                    if (ainfo.Name == "name")
+                        continue;
+
+                    object value = node.GetAttribute(ainfo);
+                    if (!value.Equals(ainfo.DefaultValue))
+                        txt.AppendLine("$" + ainfo.Name + " " + ainfo.Type.Convert(value));
+                }
+            }
+
+            return txt.ToString();
+        }
+
+        void _ExportScene(SceneDocument sceneDoc)
+        {
+            string sceneString = _ExportScene(sceneDoc.DomNode);
+
+            string dstURI = sceneDoc.Uri.AbsolutePath;
+            dstURI = dstURI.Replace(".src", "");
+            dstURI = dstURI.Replace(".source_scene", ".scene");
+            File.WriteAllText(dstURI, sceneString);
+        }
+
         #region ICommandClient
         /// <summary>
         /// Checks whether the client can do the command, if it handles it</summary>
@@ -108,40 +152,7 @@ namespace SceneEditor
             if (ECommand.eExportScene.Equals(commandTag))
             {
                 SceneDocument sceneDoc = m_documentRegistry.ActiveDocument as SceneDocument;
-                DomNode root = sceneDoc.DomNode;
-
-                StringBuilder txt = new StringBuilder();
-                foreach (DomNode node in root.Subtree)
-                {
-                    DomNodeType type = node.Type;
-                    if (!bitBoxSchema.nodeType.Type.IsAssignableFrom(type))
-                        continue;
-
-                    AttributeInfo attr_nodeName = type.GetAttributeInfo("name");
-                    if (attr_nodeName == null)
-                        continue;
-
-                    string typeName = type.Name.Split(':').Last().Replace("Node", "");
-                    string nodeName = (string)node.GetAttribute(attr_nodeName);
-
-                    txt.AppendLine();
-                    txt.AppendLine("@" + typeName + " " + nodeName);
-
-                    foreach (AttributeInfo ainfo in type.Attributes)
-                    {
-                        if (ainfo.Name == "name")
-                            continue;
-                        
-                        object value = node.GetAttribute(ainfo);
-                        if( !value.Equals( ainfo.DefaultValue) )
-                            txt.AppendLine("$" + ainfo.Name + " " + ainfo.Type.Convert(value));
-                    }
-                }
-
-                string dstURI = sceneDoc.Uri.AbsolutePath;
-                dstURI = dstURI.Replace(".src", "");
-                dstURI = dstURI.Replace(".source_scene", ".scene");
-                File.WriteAllText(dstURI, txt.ToString());
+                _ExportScene(sceneDoc);
             }
         }
 

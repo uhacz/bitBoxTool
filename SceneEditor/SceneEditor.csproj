@@ -96,7 +96,13 @@
     <EmbeddedResource Include="Schemas\bitBox.xsd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Schemas\engine_nodes_schema.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <None Include="Schemas\GenSchemaDef_bitBox.bat" />
+    <EmbeddedResource Include="Schemas\types.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
