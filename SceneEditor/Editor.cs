@@ -84,7 +84,7 @@ namespace SceneEditor
                 if (attr_nodeName == null)
                     continue;
 
-                string typeName = type.Name.Split(':').Last().Replace("Node", "");
+                string typeName = type.Name.Split(':').Last(); //.Replace("Node", "");
                 string nodeName = (string)node.GetAttribute(attr_nodeName);
 
                 txt.AppendLine();
@@ -97,7 +97,19 @@ namespace SceneEditor
 
                     object value = node.GetAttribute(ainfo);
                     if (!value.Equals(ainfo.DefaultValue))
-                        txt.AppendLine("$" + ainfo.Name + " " + ainfo.Type.Convert(value));
+                    {
+                        string valueAsSting = "";
+                        if ( value is string )
+                        {
+                            valueAsSting = "\"" + (string)value + "\"";
+                        }
+                        else
+                        {
+                            valueAsSting = ainfo.Type.Convert(value);
+                        }
+                        txt.AppendLine("$" + ainfo.Name + " " + valueAsSting );
+                    }
+                        
                 }
             }
 
